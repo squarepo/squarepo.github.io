@@ -22,4 +22,7 @@ html, body, #__nuxt {
 #__nuxt {
   overflow: hidden;
 }
+.bi, .bi::before {
+  display: block;
+}
 </style>
