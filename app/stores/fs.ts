@@ -40,7 +40,7 @@ export const useFsStore = defineStore("fs", {
       const parts = path.split("/").filter(Boolean);
       return parts.pop() || "/";
     },
-    async openPath(path: string) {
+    async changeCurrentNode(path: string) {
       try {
         const stat = await this.pfs.stat(path);
         if (stat.type === "file") {
@@ -55,6 +55,22 @@ export const useFsStore = defineStore("fs", {
         }
       } catch {
         this.currentNode = null;
+      }
+    },
+    async changeURL(path: string, method: "push" | "replace" = "push") {
+      const router = useRouter();
+      if (method === "push") {
+        router.push(path);
+      } else if (method === "replace") {
+        router.replace(path);
+      }
+    },
+    async exists(path: string) {
+      try {
+        await this.pfs.stat(path);
+        return true;
+      } catch {
+        return false;
       }
     },
     async readFile(path: string) {

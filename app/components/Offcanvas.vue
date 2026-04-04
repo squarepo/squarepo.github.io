@@ -1,11 +1,31 @@
 <script setup lang="ts">
 
-// const { $bootstrap } = useNuxtApp();
+const { $bootstrap } = useNuxtApp();
 const fsStore = useFsStore();
+const route = useRoute();
 
 onMounted(() => {
-  // const offcanvas = new $bootstrap.Offcanvas(document.getElementById("offcanvas")!);
+  const offcanvas = new $bootstrap.Offcanvas(document.getElementById("offcanvas")!);
+  watch(
+    () => route.fullPath,
+    async (fullPath) => {
+      offcanvas.hide();
+    }
+  );
 });
+
+async function deleteFile(path: string) {
+  await fsStore.removeFile(path);
+  if (!(fsStore.currentNode && await fsStore.exists(fsStore.currentNode.path))) {
+    await fsStore.changeURL("/");
+  }
+}
+
+async function createFile(path: string, content: string) {
+  await fsStore.writeFile(path, content);
+  await fsStore.changeURL(path);
+}
+
 </script>
 
 <template>
@@ -23,13 +43,13 @@ onMounted(() => {
           :key="node.path"
           class="list-group-item list-group-item-action p-0 d-flex">
           <NuxtLink :to="node.path" class="w-100 p-2">{{ node.name }}</NuxtLink>
-          <button type="button" class="btn btn-outline-danger p-1 m-2" @click="fsStore.removeFile(node.path)"><i class="bi bi-trash3"></i></button>
+          <button type="button" class="btn btn-outline-danger p-1 m-2" @click="deleteFile(node.path)"><i class="bi bi-trash3"></i></button>
         </li>
       </ul>
     </div>
     
     <div class="p-3">
-      <button type="button" class="btn btn-primary w-100" @click="fsStore.writeFile(`/arquivo_${fsStore.root.children.length}.txt`, `Texto do arquivo ${fsStore.root.children.length}.`)">Novo arquivo</button>
+      <button type="button" class="btn btn-primary w-100" @click="createFile(`/arquivo_${fsStore.root.children.length}.txt`, `Texto do arquivo ${fsStore.root.children.length}.`)">Novo arquivo</button>
     </div>
     
   </div>

@@ -9,9 +9,9 @@ export default defineNuxtPlugin({
     watch(
       () => route.fullPath,
       async (fullPath) => {
-        await fsStore.openPath(fullPath);
+        await fsStore.changeCurrentNode(fullPath);
       },
       { immediate: true }
-    )
+    );
   }
 });
