@@ -4,6 +4,7 @@ export default defineNuxtConfig({
   modules: ["@pinia/nuxt"],
   compatibilityDate: '2025-07-15',
   devtools: { enabled: true },
+  sourcemap: { client: 'hidden' },
   css: [
     "bootstrap/dist/css/bootstrap.min.css",
     "bootstrap-icons/font/bootstrap-icons.min.css"
