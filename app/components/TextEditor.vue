@@ -14,7 +14,7 @@
 <template>
   <textarea
     class="form-control w-100 h-100"
-    placeholder="Editor de texto..."
+    placeholder="Texto..."
     :value="(fsStore.currentNode as FileNode)?.content"
     @input="changeFileContent(($event.target as HTMLTextAreaElement).value)"
   ></textarea>

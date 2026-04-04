@@ -22,8 +22,8 @@
 <template>
   <input
     id="title-editor"
-    class="form-control w-100"
-    placeholder="Editor de título..."
+    class="form-control fs-1 w-100"
+    placeholder="Título..."
     :value="fsStore.currentNode?.name"
     @input="changeFileName(($event.target as HTMLTextAreaElement).value)"
     @blur="revertName(($event.target as HTMLTextAreaElement).value)"
