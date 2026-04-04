@@ -1,10 +1,11 @@
 <template>
   <div class="w-100 h-100">
 
-    <fieldset>
-      <legend>This is Squarepo</legend>
-      <h1>Hello, world!</h1>
-    </fieldset>
+    <!-- Editor -->
+    <div class="p-3 w-100 h-100 d-flex flex-column gap-3">
+      <TitleEditor></TitleEditor>
+      <TextEditor></TextEditor>
+    </div>
     
   </div>
 </template>
