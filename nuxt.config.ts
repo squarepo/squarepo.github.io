@@ -6,6 +6,7 @@ export default defineNuxtConfig({
   app: {
     head: {
       title: "Squarepo",
+      viewport: "width=device-width, height=device-height, initial-scale=1, minimum-scale=1, maximum-scale=1, user-scalable=0",
       link: [{ rel: "icon", href: "images/squarepo.svg" }],
       script: [{ src: '/scripts/auto-theme.js' }], // Dark & light theme
     }

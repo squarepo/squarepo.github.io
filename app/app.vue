@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div class="w-100 h-100">
 
     <fieldset>
       <legend>This is Squarepo</legend>
@@ -8,3 +8,13 @@
     
   </div>
 </template>
+
+<style>
+html, body, #__nuxt {
+  width: 100dvw;
+  height: 100dvh;
+}
+#__nuxt {
+  overflow: hidden;
+}
+</style>
