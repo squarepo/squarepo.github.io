@@ -40,7 +40,22 @@ export const useFsStore = defineStore("fs", {
       const parts = path.split("/").filter(Boolean);
       return parts.pop() || "/";
     },
+    getParentPathFromPath(path: string) {
+      const normalized = this.normalizePath(path);
+      if (normalized === "/") return "/";
+      const lastSlash = normalized.lastIndexOf("/");
+      return lastSlash <= 0 ? "/" : normalized.substring(0, lastSlash);
+    },
+    normalizePath(path: string) {
+      if (!path) return "/";
+      let normalized = path.replace(/\/+/g, "/");
+      if (normalized.length > 1) {
+        normalized = normalized.replace(/\/$/, "");
+      }
+      return normalized;
+    },
     async changeCurrentNode(path: string) {
+      path = decodeURIComponent(path);
       try {
         const stat = await this.pfs.stat(path);
         if (stat.type === "file") {
@@ -83,6 +98,11 @@ export const useFsStore = defineStore("fs", {
     },
     async removeFile(path: string) {
       await this.pfs.unlink(path);
+      await this.readDir("/");
+    },
+    async renameFile(oldPath: string, newPath: string) {
+      if (this.normalizePath(oldPath) === this.normalizePath(newPath)) return;
+      await this.pfs.rename(oldPath, newPath);
       await this.readDir("/");
     }
   }
