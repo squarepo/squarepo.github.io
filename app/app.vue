@@ -1,5 +1,8 @@
 <script setup lang="ts">
   const fsStore = useFsStore();
+  useHead({
+    title: () => fsStore.currentNode ? fsStore.currentNode.name : "Squarepo"
+  });
 </script>
 
 <template>

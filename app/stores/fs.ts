@@ -102,6 +102,7 @@ export const useFsStore = defineStore("fs", {
     },
     async renameFile(oldPath: string, newPath: string) {
       if (this.normalizePath(oldPath) === this.normalizePath(newPath)) return;
+      if (await this.exists(newPath)) return;
       await this.pfs.rename(oldPath, newPath);
       await this.readDir("/");
     }
