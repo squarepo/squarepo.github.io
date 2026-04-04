@@ -8,7 +8,7 @@
     "generate": "nuxt generate",
     "preview": "nuxt preview",
     "postinstall": "nuxt prepare",
-    "deploy": "npm run generate && gh-pages -d .output/public"
+    "deploy": "npm run generate && gh-pages --dotfiles --dist .output/public"
   },
   "dependencies": {
     "bootstrap": "^5.3.8",
