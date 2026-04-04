@@ -2,5 +2,10 @@
 export default defineNuxtConfig({
   compatibilityDate: '2025-07-15',
   devtools: { enabled: true },
-  css: ["bootstrap/dist/css/bootstrap.min.css"]
+  css: ["bootstrap/dist/css/bootstrap.min.css"],
+  app: {
+    head: {
+      script: [{ src: '/scripts/auto-theme.js' }], // Dark & light theme
+    }
+  }
 });
