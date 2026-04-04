@@ -17,15 +17,20 @@ onMounted(() => {
     </div>
 
     <div class="offcanvas-body">
-      <div>
-        <ul>
-          <li v-for="node in fsStore.root.children"><a :href="node.path">{{ node.name }}</a></li>
-        </ul>
-      </div>
-      <div>
-        <button type="button" class="btn btn-primary" @click="fsStore.writeFile(`/arquivo_${fsStore.root.children.length}.txt`, `Texto do arquivo ${fsStore.root.children.length}.`)">Novo arquivo</button>
-      </div>
+      <ul class="list-group">
+        <li
+          v-for="node in fsStore.root.children"
+          :key="node.path"
+          class="list-group-item list-group-item-action p-0 d-flex">
+          <a :href="node.path" class="w-100 p-2">{{ node.name }}</a>
+          <button type="button" class="btn btn-outline-danger p-1 m-2" @click="fsStore.removeFile(node.path)"><i class="bi bi-trash3"></i></button>
+        </li>
+      </ul>
     </div>
-
+    
+    <div class="p-3">
+      <button type="button" class="btn btn-primary w-100" @click="fsStore.writeFile(`/arquivo_${fsStore.root.children.length}.txt`, `Texto do arquivo ${fsStore.root.children.length}.`)">Novo arquivo</button>
+    </div>
+    
   </div>
 </template>
