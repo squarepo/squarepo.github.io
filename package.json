@@ -11,6 +11,7 @@
     "deploy": "npm run generate && gh-pages --dotfiles --dist .output/public"
   },
   "dependencies": {
+    "@isomorphic-git/lightning-fs": "^4.6.2",
     "bootstrap": "^5.3.8",
     "bootstrap-icons": "^1.13.1",
     "nuxt": "^4.4.2",
