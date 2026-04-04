@@ -1,5 +1,9 @@
 <template>
-  <div class="w-100 h-100">
+  <div class="w-100 h-100 d-flex flex-column">
+    
+    <Offcanvas></Offcanvas>
+
+    <Navbar></Navbar>
 
     <!-- Editor -->
     <div class="p-3 w-100 h-100 d-flex flex-column gap-3">
