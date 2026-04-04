@@ -4,5 +4,14 @@ export default defineNuxtPlugin({
   async setup() {
     const fsStore = useFsStore();
     await fsStore.readDir("/");
+
+    const route = useRoute();
+    watch(
+      () => route.fullPath,
+      async (fullPath) => {
+        await fsStore.openPath(fullPath);
+      },
+      { immediate: true }
+    )
   }
 });

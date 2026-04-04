@@ -1,3 +1,7 @@
+<script setup lang="ts">
+  const fsStore = useFsStore();
+</script>
+
 <template>
   <div class="w-100 h-100 d-flex flex-column">
     
@@ -6,7 +10,7 @@
     <Navbar></Navbar>
 
     <!-- Editor -->
-    <div class="p-3 w-100 h-100 d-flex flex-column gap-3">
+    <div v-if="fsStore.currentNode" class="p-3 w-100 h-100 d-flex flex-column gap-3">
       <TitleEditor></TitleEditor>
       <TextEditor></TextEditor>
     </div>

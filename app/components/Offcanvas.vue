@@ -22,7 +22,7 @@ onMounted(() => {
           v-for="node in fsStore.root.children"
           :key="node.path"
           class="list-group-item list-group-item-action p-0 d-flex">
-          <a :href="node.path" class="w-100 p-2">{{ node.name }}</a>
+          <NuxtLink :to="node.path" class="w-100 p-2">{{ node.name }}</NuxtLink>
           <button type="button" class="btn btn-outline-danger p-1 m-2" @click="fsStore.removeFile(node.path)"><i class="bi bi-trash3"></i></button>
         </li>
       </ul>

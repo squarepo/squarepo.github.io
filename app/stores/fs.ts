@@ -8,6 +8,7 @@ export const useFsStore = defineStore("fs", {
 
     return {
       pfs: $pfs as LightningFS.PromisifiedFS,
+      currentNode: null as FsNode | null,
       root: {
         name: "/",
         path: "/",
@@ -38,6 +39,23 @@ export const useFsStore = defineStore("fs", {
       if (!path) return "";
       const parts = path.split("/").filter(Boolean);
       return parts.pop() || "/";
+    },
+    async openPath(path: string) {
+      try {
+        const stat = await this.pfs.stat(path);
+        if (stat.type === "file") {
+          this.currentNode = {
+            name: this.getNameFromPath(path),
+            path,
+            type: "file",
+            content: await this.readFile(path)
+          } as FileNode;
+        } else {
+          this.currentNode = null;
+        }
+      } catch {
+        this.currentNode = null;
+      }
     },
     async readFile(path: string) {
       const content = await this.pfs.readFile(path, "utf8");
