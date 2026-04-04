@@ -5,6 +5,8 @@ export default defineNuxtConfig({
   css: ["bootstrap/dist/css/bootstrap.min.css"],
   app: {
     head: {
+      title: "Squarepo",
+      link: [{ rel: "icon", href: "images/squarepo.svg" }],
       script: [{ src: '/scripts/auto-theme.js' }], // Dark & light theme
     }
   }
