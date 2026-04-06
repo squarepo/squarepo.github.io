@@ -41,8 +41,11 @@ async function createFile(path: string, content: string) {
         <li
           v-for="node in fsStore.root.children"
           :key="node.path"
-          class="list-group-item list-group-item-action p-0 d-flex">
-          <NuxtLink :to="node.path" class="w-100 p-2 text-truncate">{{ node.name }}</NuxtLink>
+          class="list-group-item list-group-item-action p-0 d-flex align-items-center">
+          <i class="bi bi-file-earmark-text fs-5 ms-2"></i>
+          <NuxtLink :to="node.path" class="w-100 p-2 text-truncate">
+            {{ node.name }}
+          </NuxtLink>
           <button type="button" class="btn btn-outline-danger p-1 m-2" @click="deleteFile(node.path)"><i class="bi bi-trash3"></i></button>
         </li>
       </ul>
