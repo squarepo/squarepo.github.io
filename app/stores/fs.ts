@@ -96,6 +96,10 @@ export const useFsStore = defineStore("fs", {
       await this.pfs.writeFile(`/${name}`, content);
       await this.readDir("/");
     },
+    async mkdir(name: string) {
+      await this.pfs.mkdir(`/${name}`);
+      await this.readDir("/");
+    },
     async removeFile(path: string) {
       await this.pfs.unlink(path);
       await this.readDir("/");
