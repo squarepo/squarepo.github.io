@@ -11,7 +11,9 @@ onMounted(() => {
   watch(
     () => route.fullPath,
     async (fullPath) => {
-      offcanvas.hide();
+      if ((await fsStore.getNode(fullPath)).type === "file") {
+        offcanvas.hide();
+      }
     }
   );
 });
@@ -25,7 +27,7 @@ async function deleteFile(path: string) {
 
 async function createFile(path: string, content: string) {
   await fsStore.writeFile(path, content);
-  await fsStore.changeURL(path);
+  await fsStore.changeURL(fsStore.normalizePath(`${fsStore.wd.path}/${path}`));
 }
 
 </script>
@@ -40,15 +42,15 @@ async function createFile(path: string, content: string) {
 
     <div class="offcanvas-body">
       <ul class="list-group">
-        <li v-if="fsStore.getParentPathFromPath($route.path) === '/'"
+        <li v-if="fsStore.wd.path !== '/'"
           class="list-group-item list-group-item-action p-0 d-flex align-items-center">
           <i class="bi bi-folder2 fs-5 ms-2"></i>
-          <NuxtLink to="/" class="w-100 p-2 text-truncate">
+          <NuxtLink :to="fsStore.getParentPathFromPath(fsStore.wd.path)" class="w-100 p-2 text-truncate">
             ..
           </NuxtLink>
         </li>
         <li
-          v-for="node in fsStore.root.children"
+          v-for="node in fsStore.wd.children"
           :key="node.path"
           class="list-group-item list-group-item-action p-0 d-flex align-items-center">
           <i v-if="node.type === 'file'" class="bi bi-file-earmark-text fs-5 ms-2"></i>
@@ -62,11 +64,11 @@ async function createFile(path: string, content: string) {
     </div>
     
     <div class="p-3 d-flex gap-3">
-      <button type="button" class="btn btn-primary w-100 d-flex align-items-center justify-content-center gap-2" @click="createFile(`/${uuidv4()}.txt`, '')">
+      <button type="button" class="btn btn-primary w-100 d-flex align-items-center justify-content-center gap-2" @click="createFile(`${uuidv4()}.txt`, '')">
         <i class="bi bi-file-earmark-text fs-5"></i>
         <span>Novo arquivo</span>
       </button>
-      <button type="button" class="btn btn-primary w-100 d-flex align-items-center justify-content-center gap-2" @click="fsStore.mkdir(`/${uuidv4()}`)">
+      <button type="button" class="btn btn-primary w-100 d-flex align-items-center justify-content-center gap-2" @click="fsStore.mkdir(`${uuidv4()}`)">
         <i class="bi bi-folder2 fs-5"></i>
         <span>Nova pasta</span>
       </button>

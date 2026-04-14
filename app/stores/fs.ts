@@ -9,7 +9,7 @@ export const useFsStore = defineStore("fs", {
     return {
       pfs: $pfs as LightningFS.PromisifiedFS,
       currentNode: null as FsNode | null,
-      root: {
+      wd: {
         name: "/",
         path: "/",
         type: "dir",
@@ -21,7 +21,7 @@ export const useFsStore = defineStore("fs", {
   actions: {
     async readDir(path: string) {
       const result = await this.pfs.readdir(path);
-      this.root.children = await Promise.all(result.map((name) => this.getNode(`/${name}`)));
+      this.wd.children = await Promise.all(result.map((name) => this.getNode(this.normalizePath(`${this.wd.path}/${name}`))));
       return result;
     },
     async getNode(path: string) {
@@ -65,7 +65,9 @@ export const useFsStore = defineStore("fs", {
             type: "file",
             content: await this.readFile(path)
           } as FileNode;
-        } else {
+        } else if (stat.type === "dir") {
+          this.wd = await this.getNode(path) as DirNode;
+          await this.readDir(path);
           this.currentNode = null;
         }
       } catch {
@@ -93,22 +95,24 @@ export const useFsStore = defineStore("fs", {
       return content;
     },
     async writeFile(name: string, content: string) {
-      await this.pfs.writeFile(`/${name}`, content);
-      await this.readDir("/");
+      const path = this.normalizePath(`${this.wd.path}/${name}`);
+      await this.pfs.writeFile(path, content);
+      await this.readDir(this.wd.path);
     },
     async mkdir(name: string) {
-      await this.pfs.mkdir(`/${name}`);
-      await this.readDir("/");
+      const path = this.normalizePath(`${this.wd.path}/${name}`);
+      await this.pfs.mkdir(path);
+      await this.readDir(this.wd.path);
     },
     async removeFile(path: string) {
       await this.pfs.unlink(path);
-      await this.readDir("/");
+      await this.readDir(this.wd.path);
     },
     async renameFile(oldPath: string, newPath: string) {
       if (this.normalizePath(oldPath) === this.normalizePath(newPath)) return;
       if (await this.exists(newPath)) return;
       await this.pfs.rename(oldPath, newPath);
-      await this.readDir("/");
+      await this.readDir(this.wd.path);
     }
   }
 });

@@ -4,6 +4,7 @@
   const fsStore = useFsStore();
 
   async function changeFileContent(newContent: string) {
+    console.log(fsStore.currentNode)
     if (fsStore.currentNode) {
       if ((fsStore.currentNode as FileNode).content === newContent) return;
       await fsStore.writeFile(fsStore.currentNode.path, newContent);
