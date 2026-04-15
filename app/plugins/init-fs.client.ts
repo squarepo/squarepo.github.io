@@ -3,7 +3,7 @@ export default defineNuxtPlugin({
   dependsOn: ["fs"],
   async setup() {
     const fsStore = useFsStore();
-    await fsStore.readDir("/");
+    fsStore.wd.children = await fsStore.readDir("/");
 
     const route = useRoute();
     watch(

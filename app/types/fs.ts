@@ -1,15 +1,13 @@
-export type FileNode = {
+export type File = {
   name: string,
   path: string,
   type: "file",
   content?: string
 };
 
-export type DirNode = {
+export type Dir = {
   name: string,
   path: string,
   type: "dir",
-  children: FsNode[]
+  children: (File | Dir)[]
 }
-
-export type FsNode = FileNode | DirNode;

@@ -1,6 +1,6 @@
 import LightningFS from '@isomorphic-git/lightning-fs';
 import { defineStore } from "pinia";
-import type { FileNode, DirNode, FsNode } from '~/types/fs';
+import type { File, Dir } from '~/types/fs';
 
 export const useFsStore = defineStore("fs", {
   state: () => {
@@ -8,33 +8,87 @@ export const useFsStore = defineStore("fs", {
 
     return {
       pfs: $pfs as LightningFS.PromisifiedFS,
-      currentNode: null as FsNode | null,
+      currentNode: null as (File | Dir) | null,
       wd: {
         name: "/",
         path: "/",
         type: "dir",
         children: []
-      } as DirNode
+      } as Dir
     }
   },
 
   actions: {
-    async readDir(path: string) {
-      const result = await this.pfs.readdir(path);
-      this.wd.children = await Promise.all(result.map((name) => this.getNode(this.normalizePath(`${this.wd.path}/${name}`))));
-      return result;
+    async createFile(path: string, content: string) {
+      if (await this.exists(path)) return;
+      await this.pfs.writeFile(path, content);
+      this.wd.children = await this.readDir(this.wd.path);
     },
-    async getNode(path: string) {
+    async createDir(path: string) {
+      if (await this.exists(path)) return;
+      await this.pfs.mkdir(path);
+      this.wd.children = await this.readDir(this.wd.path);
+    },
+
+    async getEntry(path: string) {
       const stat = await this.pfs.stat(path);
-      const node = {
+      const entry = {
         name: this.getNameFromPath(path),
         path,
         type: stat.type,
+        ...(stat.type === "file" && { content: await this.readFile(path) }),
         ...(stat.type === "dir" && { children: [] }),
-        ...(stat.type === "file" && { content: await this.readFile(path) })
-      } as FsNode;
-      return node;
+      } as (File | Dir);
+      return entry;
     },
+    async readFile(path: string) {
+      const content = await this.pfs.readFile(path, "utf8");
+      return content;
+    },
+    async readDir(path: string) {
+      const result = await this.pfs.readdir(path);
+      return await Promise.all(result.map((name) => this.getEntry(this.normalizePath(`${this.wd.path}/${name}`))));
+    },
+
+    async renameFile(oldPath: string, newPath: string) {
+      if (oldPath === newPath) return;
+      const oldStat = await this.pfs.stat(oldPath);
+      if (oldStat.type !== "file") return;
+      if (await this.exists(newPath)) return;
+      await this.pfs.rename(oldPath, newPath);
+      this.wd.children = await this.readDir(this.wd.path);
+    },
+    async renameDir(oldPath: string, newPath: string) {
+      if (oldPath === newPath) return;
+      const oldStat = await this.pfs.stat(oldPath);
+      if (oldStat.type !== "dir") return;
+      if (await this.exists(newPath)) return;
+      await this.pfs.rename(oldPath, newPath);
+      this.wd.children = await this.readDir(this.wd.path);
+    },
+    async updateFileContent(path: string, content: string) {
+      const file = await this.getEntry(path) as File;
+      if (file.content === content) return;
+      await this.pfs.writeFile(path, content);
+      this.wd.children = await this.readDir(this.wd.path);
+    },
+
+    async deleteFile(path: string) {
+      await this.pfs.unlink(path);
+      this.wd.children = await this.readDir(this.wd.path);
+    },
+    async deleteDir(path: string, recursive: boolean = false) {
+      if (recursive) {
+        const entries = await this.readDir(path);
+        for (const entry of entries) {
+          if (entry.type === "dir") await this.deleteDir(entry.path);
+          else if (entry.type === "file") await this.deleteFile(entry.path);
+        }
+      }
+      await this.pfs.rmdir(path);
+      this.wd.children = await this.readDir(this.wd.path);
+    },
+
     getNameFromPath(path: string) {
       if (!path) return "";
       const parts = path.split("/").filter(Boolean);
@@ -64,10 +118,10 @@ export const useFsStore = defineStore("fs", {
             path,
             type: "file",
             content: await this.readFile(path)
-          } as FileNode;
+          } as File;
         } else if (stat.type === "dir") {
-          this.wd = await this.getNode(path) as DirNode;
-          await this.readDir(path);
+          this.wd = await this.getEntry(path) as Dir;
+          this.wd.children = await this.readDir(this.wd.path);
           this.currentNode = null;
         }
       } catch {
@@ -89,30 +143,6 @@ export const useFsStore = defineStore("fs", {
       } catch {
         return false;
       }
-    },
-    async readFile(path: string) {
-      const content = await this.pfs.readFile(path, "utf8");
-      return content;
-    },
-    async writeFile(name: string, content: string) {
-      const path = this.normalizePath(`${this.wd.path}/${name}`);
-      await this.pfs.writeFile(path, content);
-      await this.readDir(this.wd.path);
-    },
-    async mkdir(name: string) {
-      const path = this.normalizePath(`${this.wd.path}/${name}`);
-      await this.pfs.mkdir(path);
-      await this.readDir(this.wd.path);
-    },
-    async removeFile(path: string) {
-      await this.pfs.unlink(path);
-      await this.readDir(this.wd.path);
-    },
-    async renameFile(oldPath: string, newPath: string) {
-      if (this.normalizePath(oldPath) === this.normalizePath(newPath)) return;
-      if (await this.exists(newPath)) return;
-      await this.pfs.rename(oldPath, newPath);
-      await this.readDir(this.wd.path);
     }
   }
 });
