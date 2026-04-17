@@ -4,8 +4,8 @@
   const fsStore = useFsStore();
 
   async function updateFileContent(newContent: string) {
-    if (fsStore.currentNode) {
-      await fsStore.updateFileContent(fsStore.currentNode.path, newContent);
+    if (fsStore.currentEntry) {
+      await fsStore.updateFileContent(fsStore.currentEntry.path, newContent);
     }
   }
 </script>
@@ -14,7 +14,7 @@
   <textarea
     class="form-control w-100 h-100"
     placeholder="Texto..."
-    :value="(fsStore.currentNode as File)?.content"
+    :value="(fsStore.currentEntry as File)?.content"
     @input="updateFileContent(($event.target as HTMLTextAreaElement).value)"
   ></textarea>
 </template>

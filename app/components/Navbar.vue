@@ -10,7 +10,7 @@
       </button>
       <ol class="breadcrumb m-0 d-flex flex-nowrap text-truncate">
         <li class="breadcrumb-item"><NuxtLink to="/">root</NuxtLink></li>
-        <li class="breadcrumb-item text-truncate active">{{ fsStore.currentNode?.name }}</li>
+        <li class="breadcrumb-item text-truncate active">{{ fsStore.currentEntry?.name }}</li>
       </ol>
     </div>
   </nav>

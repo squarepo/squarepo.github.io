@@ -8,8 +8,9 @@ export const useFsStore = defineStore("fs", {
 
     return {
       pfs: $pfs as LightningFS.PromisifiedFS,
-      currentNode: null as (File | Dir) | null,
-      wd: {
+      currentEntry: null as (File | Dir) | null,
+      expandedDirs: new Set<string>(),
+      root: {
         name: "/",
         path: "/",
         type: "dir",
@@ -22,12 +23,12 @@ export const useFsStore = defineStore("fs", {
     async createFile(path: string, content: string) {
       if (await this.exists(path)) return;
       await this.pfs.writeFile(path, content);
-      this.wd.children = await this.readDir(this.wd.path);
+      this.root.children = await this.readDir("/", true);
     },
     async createDir(path: string) {
       if (await this.exists(path)) return;
       await this.pfs.mkdir(path);
-      this.wd.children = await this.readDir(this.wd.path);
+      this.root.children = await this.readDir("/", true);
     },
 
     async getEntry(path: string) {
@@ -45,9 +46,13 @@ export const useFsStore = defineStore("fs", {
       const content = await this.pfs.readFile(path, "utf8");
       return content;
     },
-    async readDir(path: string) {
-      const result = await this.pfs.readdir(path);
-      return await Promise.all(result.map((name) => this.getEntry(this.normalizePath(`${this.wd.path}/${name}`))));
+    async readDir(path: string, recursive: boolean = false) {
+      const entryNames = await this.pfs.readdir(path);
+      return await Promise.all(entryNames.map(async (name) => {
+        const entry = await this.getEntry(this.normalizePath(`/${path}/${name}`));
+        if (entry.type === "dir") entry.children = await this.readDir(entry.path);
+        return entry;
+      }));
     },
 
     async renameFile(oldPath: string, newPath: string) {
@@ -56,7 +61,7 @@ export const useFsStore = defineStore("fs", {
       if (oldStat.type !== "file") return;
       if (await this.exists(newPath)) return;
       await this.pfs.rename(oldPath, newPath);
-      this.wd.children = await this.readDir(this.wd.path);
+      this.root.children = await this.readDir("/", true);
     },
     async renameDir(oldPath: string, newPath: string) {
       if (oldPath === newPath) return;
@@ -64,18 +69,18 @@ export const useFsStore = defineStore("fs", {
       if (oldStat.type !== "dir") return;
       if (await this.exists(newPath)) return;
       await this.pfs.rename(oldPath, newPath);
-      this.wd.children = await this.readDir(this.wd.path);
+      this.root.children = await this.readDir("/", true);
     },
     async updateFileContent(path: string, content: string) {
       const file = await this.getEntry(path) as File;
       if (file.content === content) return;
       await this.pfs.writeFile(path, content);
-      this.wd.children = await this.readDir(this.wd.path);
+      this.root.children = await this.readDir("/", true);
     },
 
     async deleteFile(path: string) {
       await this.pfs.unlink(path);
-      this.wd.children = await this.readDir(this.wd.path);
+      this.root.children = await this.readDir("/", true);
     },
     async deleteDir(path: string, recursive: boolean = false) {
       if (recursive) {
@@ -86,7 +91,7 @@ export const useFsStore = defineStore("fs", {
         }
       }
       await this.pfs.rmdir(path);
-      this.wd.children = await this.readDir(this.wd.path);
+      this.root.children = await this.readDir("/", true);
     },
 
     getNameFromPath(path: string) {
@@ -113,19 +118,19 @@ export const useFsStore = defineStore("fs", {
       try {
         const stat = await this.pfs.stat(path);
         if (stat.type === "file") {
-          this.currentNode = {
+          this.currentEntry = {
             name: this.getNameFromPath(path),
             path,
             type: "file",
             content: await this.readFile(path)
           } as File;
         } else if (stat.type === "dir") {
-          this.wd = await this.getEntry(path) as Dir;
-          this.wd.children = await this.readDir(this.wd.path);
-          this.currentNode = null;
+          this.root = await this.getEntry(path) as Dir;
+          this.root.children = await this.readDir("/", true);
+          this.currentEntry = null;
         }
       } catch {
-        this.currentNode = null;
+        this.currentEntry = null;
       }
     },
     async changeURL(path: string, method: "push" | "replace" = "push") {
