@@ -3,7 +3,7 @@
 
   async function changeFileName(newName: string) {
     if (fsStore.currentEntry) {
-      const parentPath = fsStore.getParentPathFromPath(fsStore.currentEntry.path);
+      const parentPath = fsStore.getParentPath(fsStore.currentEntry.path);
       const newPath = parentPath === "/" ? `/${newName}` : `${parentPath}/${newName}`;
       if (fsStore.normalizePath(fsStore.currentEntry.path) === fsStore.normalizePath(newPath)) return;
       if (await fsStore.exists(newPath)) return;

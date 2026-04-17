@@ -13,7 +13,7 @@
     <Navbar></Navbar>
 
     <!-- Editor -->
-    <div v-if="fsStore.currentEntry" class="p-3 w-100 h-100 d-flex flex-column gap-3">
+    <div v-if="fsStore.currentEntry && fsStore.currentEntry.type === 'file'" class="p-3 w-100 h-100 d-flex flex-column gap-3">
       <TitleEditor></TitleEditor>
       <TextEditor></TextEditor>
     </div>

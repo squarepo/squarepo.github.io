@@ -34,7 +34,7 @@ export const useFsStore = defineStore("fs", {
     async getEntry(path: string) {
       const stat = await this.pfs.stat(path);
       const entry = {
-        name: this.getNameFromPath(path),
+        name: this.getName(path),
         path,
         type: stat.type,
         ...(stat.type === "file" && { content: await this.readFile(path) }),
@@ -94,12 +94,12 @@ export const useFsStore = defineStore("fs", {
       this.root.children = await this.readDir("/", true);
     },
 
-    getNameFromPath(path: string) {
+    getName(path: string) {
       if (!path) return "";
       const parts = path.split("/").filter(Boolean);
       return parts.pop() || "/";
     },
-    getParentPathFromPath(path: string) {
+    getParentPath(path: string) {
       const normalized = this.normalizePath(path);
       if (normalized === "/") return "/";
       const lastSlash = normalized.lastIndexOf("/");
@@ -113,21 +113,24 @@ export const useFsStore = defineStore("fs", {
       }
       return normalized;
     },
-    async changeCurrentNode(path: string) {
+    async changeCurrentEntry(path: string) {
       path = decodeURIComponent(path);
       try {
         const stat = await this.pfs.stat(path);
         if (stat.type === "file") {
           this.currentEntry = {
-            name: this.getNameFromPath(path),
+            name: this.getName(path),
             path,
             type: "file",
             content: await this.readFile(path)
           } as File;
         } else if (stat.type === "dir") {
-          this.root = await this.getEntry(path) as Dir;
-          this.root.children = await this.readDir("/", true);
-          this.currentEntry = null;
+          this.currentEntry = {
+            name: this.getName(path),
+            path,
+            type: "dir",
+            children: await this.readDir(path, true)
+          } as Dir;
         }
       } catch {
         this.currentEntry = null;

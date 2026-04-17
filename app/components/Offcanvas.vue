@@ -18,14 +18,20 @@ onMounted(() => {
   );
 });
 
-async function createFile(name: string, content: string) {
-  const normalizedPath = fsStore.normalizePath(`/${fsStore.root.path}/${name}`);
-  await fsStore.createFile(normalizedPath, content);
+async function createFile() {
+  const name = prompt(`Criar novo arquivo`, uuidv4());
+  if (name === null) return;
+  const path = fsStore.currentEntry?.type === "file" ? fsStore.getParentPath(fsStore.currentEntry?.path) : fsStore.currentEntry?.path;
+  const normalizedPath = fsStore.normalizePath(`/${path}/${name}`);
+  await fsStore.createFile(normalizedPath, "");
   await fsStore.changeURL(normalizedPath);
 }
 
-async function createDir(name: string) {
-  const normalizedPath = fsStore.normalizePath(`/${fsStore.root.path}/${name}`);
+async function createDir() {
+  const name = prompt(`Criar nova pasta`, uuidv4());
+  if (name === null) return;
+  const path = fsStore.currentEntry?.type === "file" ? fsStore.getParentPath(fsStore.currentEntry?.path) : fsStore.currentEntry?.path;
+  const normalizedPath = fsStore.normalizePath(`/${path}/${name}`);
   await fsStore.createDir(normalizedPath);
 }
 
@@ -35,20 +41,21 @@ async function createDir(name: string) {
   <div class="offcanvas offcanvas-start" tabindex="-1" id="offcanvas" aria-labelledby="offcanvas">
 
     <div class="offcanvas-header">
-      <h5 class="offcanvas-title" id="offcanvasExampleLabel">Filesystem</h5>
+      <h5 class="offcanvas-title" id="offcanvasExampleLabel">Arquivos</h5>
       <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
     </div>
 
     <div class="offcanvas-body">
-      <DirList :entries="fsStore.root.children"></DirList>
+      <DirList v-if="fsStore.root.children.length" :entries="fsStore.root.children"></DirList>
+      <div v-else class="text-body-tertiary w-100 h-100 d-flex justify-content-center align-items-center"><span>Nenhum arquivo ou pasta</span></div>
     </div>
     
     <div class="p-3 d-flex gap-3">
-      <button type="button" class="btn btn-primary w-100 d-flex align-items-center justify-content-center gap-2" @click="createFile(`${uuidv4()}.txt`, '')">
+      <button type="button" class="btn btn-primary w-100 d-flex align-items-center justify-content-center gap-2" @click="createFile()">
         <i class="bi bi-file-earmark-text fs-5"></i>
         <span>Novo arquivo</span>
       </button>
-      <button type="button" class="btn btn-primary w-100 d-flex align-items-center justify-content-center gap-2" @click="createDir(`${uuidv4()}`)">
+      <button type="button" class="btn btn-primary w-100 d-flex align-items-center justify-content-center gap-2" @click="createDir()">
         <i class="bi bi-folder2 fs-5"></i>
         <span>Nova pasta</span>
       </button>

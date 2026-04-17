@@ -13,16 +13,47 @@ function toggleDir(path: string) {
 }
 
 async function deleteFile(path: string) {
-  await fsStore.deleteFile(path);
-  if (!(fsStore.currentEntry && await fsStore.exists(fsStore.currentEntry.path))) {
-    await fsStore.changeURL("/");
+  const entry = await fsStore.getEntry(path);
+  if (confirm(`${entry.type === "file" ? "O arquivo" : "A pasta"} "${entry.name}" será excluíd${entry.type === "file" ? "o" : "a"}`)) {
+    await fsStore.deleteFile(path);
+    if (!(fsStore.currentEntry && await fsStore.exists(fsStore.currentEntry.path))) {
+      await fsStore.changeURL("/");
+    }
   }
 }
 
 async function deleteDir(path: string, recursive: boolean) {
-  await fsStore.deleteDir(path, recursive);
-  if (!(fsStore.currentEntry && await fsStore.exists(fsStore.currentEntry.path))) {
-    await fsStore.changeURL("/");
+  const entry = await fsStore.getEntry(path);
+  if (confirm(`${entry.type === "file" ? "O arquivo" : "A pasta"} "${entry.name}" será excluíd${entry.type === "file" ? "o" : "a"}`)) {
+    await fsStore.deleteDir(path, recursive);
+    if (!(fsStore.currentEntry && await fsStore.exists(fsStore.currentEntry.path))) {
+      await fsStore.changeURL("/");
+    }
+  }
+}
+
+async function renameFile(path: string) {
+  const entry = await fsStore.getEntry(path);
+  if (entry.type !== "file") return;
+  const name = prompt(`Renomear arquivo`, entry.name);
+  if (name === null) return;
+  const newPath = fsStore.normalizePath(`/${fsStore.getParentPath(path)}/${name}`);
+  await fsStore.renameFile(path, newPath);
+  if (path === fsStore.currentEntry?.path) {
+    await fsStore.changeURL(newPath);
+  }
+}
+
+async function renameDir(path: string) {
+  const entry = await fsStore.getEntry(path);
+  if (entry.type !== "dir") return;
+  const name = prompt(`Renomear pasta`, entry.name);
+  if (name === null) return;
+  const newPath = fsStore.normalizePath(`/${fsStore.getParentPath(path)}/${name}`);
+  await fsStore.renameDir(path, newPath);
+  console.log(`path: ${path}; fsStore.currentEntry?.path: ${fsStore.currentEntry?.path}`);
+  if (path === fsStore.currentEntry?.path) {
+    await fsStore.changeURL(newPath);
   }
 }
 </script>
@@ -36,12 +67,13 @@ async function deleteDir(path: string, recursive: boolean) {
 
       <div class="d-flex w-100 align-items-center text-body list-group-item-action rounded">
         <i @click="toggleDir(entry.path)" :class="{ invisible: entry.type !== 'dir', 'bi-chevron-right': !fsStore.expandedDirs.has(entry.path), 'bi-chevron-down': fsStore.expandedDirs.has(entry.path) }" class="bi ms-2"></i>
-        <i v-if="entry.type === 'file'" class="bi bi-file-earmark-text fs-5 ms-2"></i>
-        <i v-else-if="entry.type === 'dir'" class="bi bi-folder2 fs-5 ms-2"></i>
+        <i v-if="entry.type === 'file'" class="bi bi-file-earmark-text text-secondary-emphasis fs-5 ms-2"></i>
+        <i v-else-if="entry.type === 'dir'" class="bi fs-5 ms-2 text-warning" :class="{ 'bi-folder2-open': fsStore.expandedDirs.has(entry.path), 'bi-folder': !fsStore.expandedDirs.has(entry.path) }"></i>
         <NuxtLink :to="entry.path" class="w-100 p-2 text-truncate text-body text-decoration-none">
           {{ entry.name }}
         </NuxtLink>
-        <button type="button" class="btn btn-delete border-0 p-1 m-2" @click="entry.type === 'file' ? deleteFile(entry.path) : deleteDir(entry.path, true)"><i class="bi bi-trash3"></i></button>
+        <button type="button" class="btn btn-rename border-0 p-0 me-2" @click="entry.type === 'file' ? renameFile(entry.path) : renameDir(entry.path)"><i class="bi bi-pencil"></i></button>
+        <button type="button" class="btn btn-delete border-0 p-0 me-2" @click="entry.type === 'file' ? deleteFile(entry.path) : deleteDir(entry.path, true)"><i class="bi bi-trash3"></i></button>
       </div>
 
       <DirList class="ps-4 pt-1" v-if="entry.type === 'dir' && fsStore.expandedDirs.has(entry.path) && entry.children.length" :entries="entry.children"></DirList>
@@ -54,5 +86,8 @@ async function deleteDir(path: string, recursive: boolean) {
 <style>
 .btn-delete:hover {
   color: var(--bs-danger);
+}
+.btn-rename:hover {
+  color: var(--bs-secondary);
 }
 </style>
