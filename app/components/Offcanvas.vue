@@ -1,7 +1,5 @@
 <script setup lang="ts">
 
-import { v4 as uuidv4 } from 'uuid';
-
 const { $bootstrap } = useNuxtApp();
 const fsStore = useFsStore();
 const route = useRoute();
@@ -11,8 +9,11 @@ onMounted(() => {
   watch(
     () => route.fullPath,
     async (fullPath) => {
-      if ((await fsStore.getEntry(fullPath)).type === "file") {
+      const entry = await fsStore.getEntry(fullPath);
+      if (entry.type === "file") {
         offcanvas.hide();
+      } else if (entry.type === "dir") {
+        fsStore.expandedDirs.add(entry.path);
       }
     }
   );

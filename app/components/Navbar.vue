@@ -1,5 +1,16 @@
 <script setup lang="ts">
-  const fsStore = useFsStore();
+import type { File, Dir } from '~/types/fs';
+
+const fsStore = useFsStore();
+const route = useRoute();
+const pathEntries = ref<(File | Dir)[]>([]);
+watch(
+  () => route.fullPath,
+  async (fullPath) => {
+    pathEntries.value = await fsStore.getPathEntries(fsStore.normalizePath(decodeURIComponent(route.path)));
+  },
+  { immediate: true }
+);
 </script>
 
 <template>
@@ -8,9 +19,16 @@
       <button type="button" class="btn btn-outline-secondary fs-2 p-1" data-bs-toggle="offcanvas" data-bs-target="#offcanvas">
         <i class="bi bi-list"></i>
       </button>
-      <ol class="breadcrumb m-0 d-flex flex-nowrap text-truncate">
-        <li class="breadcrumb-item"><NuxtLink to="/">root</NuxtLink></li>
-        <li class="breadcrumb-item text-truncate active">{{ fsStore.currentEntry?.name }}</li>
+      <ol class="breadcrumb m-0 d-flex flex-nowrap text-truncate w-100 overflow-auto">
+        <li
+          v-for="(entry, i) in pathEntries"
+          :key="`navbar-${entry.path}`"
+          class="breadcrumb-item flex-shrink-0"
+          :class="{ active: pathEntries.length === i + 1 }"
+        >
+          <NuxtLink v-if="(i + 1) < pathEntries.length" class="text-decoration-none" :to="entry.path">{{ entry.name }}</NuxtLink>
+          <div v-else>{{ entry.name }}</div>
+        </li>
       </ol>
     </div>
   </nav>
