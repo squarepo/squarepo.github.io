@@ -23,7 +23,8 @@
 <template>
   <input
     id="title-editor"
-    class="form-control fs-1 w-100"
+    class="form-control p-3 rounded-0 border-0 shadow-none fs-1 w-100"
+    style="box-sizing: border-box;"
     placeholder="Título..."
     :value="fsStore.currentEntry?.name"
     @input="changeFileName(($event.target as HTMLTextAreaElement).value)"

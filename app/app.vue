@@ -13,9 +13,11 @@
     <Navbar></Navbar>
 
     <!-- Editor -->
-    <div v-if="fsStore.currentEntry && fsStore.currentEntry.type === 'file'" class="p-3 w-100 h-100 d-flex flex-column gap-3">
-      <TitleEditor></TitleEditor>
-      <TextEditor></TextEditor>
+    <div v-if="fsStore.currentEntry && fsStore.currentEntry.type === 'file'" class="w-100 h-100 overflow-auto d-flex flex-column">
+      <div class="container p-0 my-3 w-100 h-100 d-flex flex-column">
+        <TitleEditor></TitleEditor>
+        <TextEditor></TextEditor>
+      </div>
     </div>
     
   </div>
