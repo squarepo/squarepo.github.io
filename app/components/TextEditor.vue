@@ -28,8 +28,8 @@ onMounted(() => {
   <div class="d-flex flex-grow-1">
     <textarea
       ref="textareaEl"
-      class="form-control p-3 pb-5 rounded-0 border-0 shadow-none overflow-hidden w-100"
-      style="resize: none; box-sizing: border-box; overflow-anchor: none;"
+      class="form-control p-3 border-0 shadow-none overflow-hidden w-100"
+      style="resize: none; box-sizing: border-box; padding-bottom: 200px !important;"
       placeholder="Texto..."
       :value="(fsStore.currentEntry as File)?.content"
       @input="updateFileContent(($event.target as HTMLTextAreaElement).value)"
