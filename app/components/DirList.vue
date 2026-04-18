@@ -35,8 +35,8 @@ async function deleteDir(path: string, recursive: boolean) {
 async function renameFile(path: string) {
   const entry = await fsStore.getEntry(path);
   if (entry.type !== "file") return;
-  const name = prompt(`Renomear arquivo`, entry.name);
-  if (name === null) return;
+  const name = prompt(`Renomear arquivo`, entry.name)?.trim();
+  if (name === undefined) return;
   const newPath = fsStore.normalizePath(`/${fsStore.getParentPath(path)}/${name}`);
   await fsStore.renameFile(path, newPath);
   if (path === fsStore.currentEntry?.path) {
@@ -47,8 +47,8 @@ async function renameFile(path: string) {
 async function renameDir(path: string) {
   const entry = await fsStore.getEntry(path);
   if (entry.type !== "dir") return;
-  const name = prompt(`Renomear pasta`, entry.name);
-  if (name === null) return;
+  const name = prompt(`Renomear pasta`, entry.name)?.trim();
+  if (name === undefined) return;
   const newPath = fsStore.normalizePath(`/${fsStore.getParentPath(path)}/${name}`);
   await fsStore.renameDir(path, newPath);
   console.log(`path: ${path}; fsStore.currentEntry?.path: ${fsStore.currentEntry?.path}`);

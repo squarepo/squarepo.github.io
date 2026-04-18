@@ -22,8 +22,8 @@ onMounted(() => {
 async function createFile() {
   if (fsStore.currentEntry) {
     const path = fsStore.currentEntry?.type === "file" ? fsStore.getParentPath(fsStore.currentEntry?.path) : fsStore.currentEntry?.path;
-    const name = prompt(`Criar novo arquivo`,  await getName(path, "Arquivo"));
-    if (name === null) return;
+    const name = prompt(`Criar novo arquivo`,  await getName(path, "Arquivo"))?.trim();
+    if (name === undefined) return;
     const normalizedPath = fsStore.normalizePath(`/${path}/${name}`);
     await fsStore.createFile(normalizedPath, "");
     await fsStore.changeURL(normalizedPath);
@@ -33,8 +33,8 @@ async function createFile() {
 async function createDir() {
   if (fsStore.currentEntry) {
     const path = fsStore.currentEntry.type === "file" ? fsStore.getParentPath(fsStore.currentEntry.path) : fsStore.currentEntry.path;
-    const name = prompt(`Criar nova pasta`, await getName(path, "Pasta"));
-    if (name === null) return;
+    const name = prompt(`Criar nova pasta`, await getName(path, "Pasta"))?.trim();
+    if (name === undefined) return;
     const normalizedPath = fsStore.normalizePath(`/${path}/${name}`);
     await fsStore.createDir(normalizedPath);
   }

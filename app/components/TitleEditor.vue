@@ -2,6 +2,7 @@
   const fsStore = useFsStore();
 
   async function changeFileName(newName: string) {
+    newName = newName.trim();
     if (fsStore.currentEntry) {
       const parentPath = fsStore.getParentPath(fsStore.currentEntry.path);
       const newPath = parentPath === "/" ? `/${newName}` : `${parentPath}/${newName}`;
