@@ -113,6 +113,21 @@ export const useFsStore = defineStore("fs", {
       }
       return normalized;
     },
+    async getPathEntries(path: string) {
+      const entries: (File | Dir)[] = [];
+      if (path === "/") return [await this.getEntry("/")];
+      path.split("/").reduce(async (accumulator, currentValue, index) => {
+        if (index > 0) {
+          const currentPath = `${await accumulator}/${currentValue}`;
+          entries.push(await this.getEntry(currentPath));
+          return currentPath;
+        } else {
+          entries.push(await this.getEntry("/"));
+          return "";
+        }
+      }, Promise.resolve(""));
+      return entries;
+    },
     async changeCurrentEntry(path: string) {
       path = decodeURIComponent(path);
       try {
