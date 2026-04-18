@@ -33,3 +33,9 @@ watch(
     </div>
   </nav>
 </template>
+
+<style>
+.breadcrumb-item:nth-child(2)::before {
+  content: none;
+}
+</style>
