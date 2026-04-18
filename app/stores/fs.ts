@@ -86,7 +86,7 @@ export const useFsStore = defineStore("fs", {
       if (recursive) {
         const entries = await this.readDir(path);
         for (const entry of entries) {
-          if (entry.type === "dir") await this.deleteDir(entry.path);
+          if (entry.type === "dir") await this.deleteDir(entry.path, true);
           else if (entry.type === "file") await this.deleteFile(entry.path);
         }
       }
