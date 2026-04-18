@@ -1,7 +1,7 @@
 <script setup lang="ts">
   const fsStore = useFsStore();
   useHead({
-    title: () => fsStore.currentEntry ? fsStore.currentEntry.name : "Squarepo"
+    title: () => fsStore.currentEntry && fsStore.currentEntry.path !== "/" ? fsStore.currentEntry.name : "Squarepo"
   });
 </script>
 

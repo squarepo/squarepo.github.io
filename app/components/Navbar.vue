@@ -19,7 +19,10 @@ watch(
       <button type="button" class="btn btn-outline-secondary fs-2 p-1" data-bs-toggle="offcanvas" data-bs-target="#offcanvas">
         <i class="bi bi-list"></i>
       </button>
-      <ol class="breadcrumb m-0 d-flex flex-nowrap text-truncate w-100 overflow-auto">
+      <ol
+        v-if="pathEntries.length > 1"
+        class="breadcrumb m-0 d-flex flex-nowrap text-truncate w-100 overflow-auto"
+      >
         <li
           v-for="(entry, i) in pathEntries"
           :key="`navbar-${entry.path}`"
