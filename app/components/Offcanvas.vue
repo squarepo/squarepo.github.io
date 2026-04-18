@@ -19,20 +19,33 @@ onMounted(() => {
 });
 
 async function createFile() {
-  const name = prompt(`Criar novo arquivo`, uuidv4());
-  if (name === null) return;
-  const path = fsStore.currentEntry?.type === "file" ? fsStore.getParentPath(fsStore.currentEntry?.path) : fsStore.currentEntry?.path;
-  const normalizedPath = fsStore.normalizePath(`/${path}/${name}`);
-  await fsStore.createFile(normalizedPath, "");
-  await fsStore.changeURL(normalizedPath);
+  if (fsStore.currentEntry) {
+    const path = fsStore.currentEntry?.type === "file" ? fsStore.getParentPath(fsStore.currentEntry?.path) : fsStore.currentEntry?.path;
+    const name = prompt(`Criar novo arquivo`,  await getName(path, "Arquivo"));
+    if (name === null) return;
+    const normalizedPath = fsStore.normalizePath(`/${path}/${name}`);
+    await fsStore.createFile(normalizedPath, "");
+    await fsStore.changeURL(normalizedPath);
+  }
 }
 
 async function createDir() {
-  const name = prompt(`Criar nova pasta`, uuidv4());
-  if (name === null) return;
-  const path = fsStore.currentEntry?.type === "file" ? fsStore.getParentPath(fsStore.currentEntry?.path) : fsStore.currentEntry?.path;
-  const normalizedPath = fsStore.normalizePath(`/${path}/${name}`);
-  await fsStore.createDir(normalizedPath);
+  if (fsStore.currentEntry) {
+    const path = fsStore.currentEntry.type === "file" ? fsStore.getParentPath(fsStore.currentEntry.path) : fsStore.currentEntry.path;
+    const name = prompt(`Criar nova pasta`, await getName(path, "Pasta"));
+    if (name === null) return;
+    const normalizedPath = fsStore.normalizePath(`/${path}/${name}`);
+    await fsStore.createDir(normalizedPath);
+  }
+}
+
+async function getName(path: string, baseName: string) {
+  let name: string = baseName;
+  let num = 0;
+  while (await fsStore.exists(fsStore.normalizePath(`/${path}/${name}`))) {
+    name = `${baseName} ${++num}`;
+  }
+  return name;
 }
 
 </script>
