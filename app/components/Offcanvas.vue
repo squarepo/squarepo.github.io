@@ -60,7 +60,7 @@ async function getName(path: string, baseName: string) {
     </div>
 
     <div class="offcanvas-body">
-      <DirList v-if="fsStore.root.children.length" :entries="fsStore.root.children"></DirList>
+      <DirTree v-if="fsStore.root.children.length" :entries="fsStore.root.children"></DirTree>
       <div v-else class="text-body-tertiary w-100 h-100 d-flex justify-content-center align-items-center"><span>Nenhum arquivo ou pasta</span></div>
     </div>
     
@@ -70,7 +70,7 @@ async function getName(path: string, baseName: string) {
         <span>Novo arquivo</span>
       </button>
       <button type="button" class="btn btn-primary w-100 d-flex align-items-center justify-content-center gap-2" @click="createDir()">
-        <i class="bi bi-folder2 fs-5"></i>
+        <i class="bi bi-folder fs-5"></i>
         <span>Nova pasta</span>
       </button>
     </div>
