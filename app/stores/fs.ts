@@ -48,6 +48,7 @@ export const useFsStore = defineStore("fs", {
     },
     async readDir(path: string, recursive: boolean = false) {
       const entryNames = await this.pfs.readdir(path);
+      entryNames.sort((a, b) => a.localeCompare(b));
       return await Promise.all(entryNames.map(async (name) => {
         const entry = await this.getEntry(this.normalizePath(`/${path}/${name}`));
         if (entry.type === "dir") entry.children = await this.readDir(entry.path);
