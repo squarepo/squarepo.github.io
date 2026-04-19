@@ -91,7 +91,7 @@ watch(() => fsStore.root.children, async () => {
 
 <template>
   <div class="d-flex flex-column gap-3">
-    <ul class="list-group w-100">
+    <ul v-if="props.dir.children.length > 0" class="list-group w-100">
       <li
         v-if="fsStore.currentEntry?.path !== '/'"
         class="list-group-item list-group-item-action p-0 d-flex align-items-center"
