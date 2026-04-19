@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { Draggable, Droppable } from '@shopify/draggable';
 import type { File, Dir } from '~/types/fs';
 
 const props = defineProps<{ dir: Dir }>();
@@ -87,24 +88,79 @@ async function getName(path: string, baseName: string) {
 watch(() => fsStore.root.children, async () => {
   props.dir.children = await fsStore.readDir(props.dir.path);
 });
+
+const ul = ref<HTMLUListElement | null>(null);
+onMounted(() => {
+
+  const draggable = new Draggable(ul.value!, {
+    draggable: 'li',
+    distance: 10,
+    delay: {
+      touch: 300
+    },
+    mirror: {
+      appendTo: document.body,
+      constrainDimensions: true,
+    }
+  });
+
+  draggable.on('drag:start', (e) => {
+    if (e.source.classList.contains("parent-dir")) {
+      e.cancel();
+      return;
+    }
+    e.source.classList.add('draggable-source');
+    e.originalSource.classList.add('draggable-original-source');
+  });
+  let dragOverEl: HTMLElement | null = null;
+  draggable.on("drag:over", (e) => {
+    dragOverEl = e.over;
+    const isDir = e.over.dataset["type"] === "dir";
+    if (isDir && e.over !== e.source) e.over.classList.add("draggable-over");
+  });
+  draggable.on("drag:out", (e) => {
+    e.over.classList.remove("draggable-over");
+    dragOverEl = null;
+  });
+  draggable.on('drag:stop', (e) => {
+    e.source.classList.remove('draggable-source');
+    e.originalSource.classList.remove('draggable-original-source');
+    dragOverEl?.classList.remove("draggable-over");
+
+    const isDir = dragOverEl?.dataset["type"] === "dir";
+    if (isDir && dragOverEl !== e.source) {
+      const draggedPath = e.source.dataset["path"];
+      const droppedPath = dragOverEl?.dataset["path"];
+      fsStore.moveEntry(draggedPath!, droppedPath!);
+    }
+    dragOverEl = null;
+  });
+
+});
 </script>
 
 <template>
   <div class="d-flex flex-column gap-3">
-    <ul v-if="props.dir.children.length > 0" class="list-group w-100">
+    <ul ref="ul" v-show="!(props.dir.path === '/' && !props.dir.children.length)" class="list-group w-100">
       <li
+        :data-path="fsStore.getParentPath(dir.path)"
+        data-type="dir"
         v-if="fsStore.currentEntry?.path !== '/'"
-        class="list-group-item list-group-item-action p-0 d-flex align-items-center"
+        class="parent-dir list-group-item p-0 d-flex align-items-center"
       >
-        <i class="bi bi-folder fs-5 ms-2 text-warning"></i>
-        <NuxtLink :to="fsStore.getParentPath(dir.path)" class="w-100 p-2 text-truncate text-body text-decoration-none">..</NuxtLink>
+        <div class="d-flex align-items-center w-100">
+          <i class="bi bi-folder fs-5 ms-2 text-warning"></i>
+          <NuxtLink :to="fsStore.getParentPath(dir.path)" class="w-100 p-2 text-truncate text-body text-decoration-none">..</NuxtLink>
+        </div>
       </li>
       <li
         v-for="entry in props.dir.children"
         :key="entry.path"
+        :data-path="entry.path"
+        :data-type="entry.type"
         class="list-group-item p-0 d-flex align-items-center">
   
-        <div class="d-flex w-100 align-items-center text-body list-group-item-action rounded">
+        <div class="d-flex w-100 align-items-center text-body">
           <template v-if="entry.type === 'file'">
             <i v-if="entry.name === 'db.json'" class="bi bi-database text-primary fs-5 ms-2"></i>
             <i v-else class="bi text-secondary-emphasis fs-5 ms-2" :class="{ 'bi-file-earmark-text': entry.content, 'bi-file-earmark': !entry.content }"></i>
@@ -139,5 +195,19 @@ watch(() => fsStore.root.children, async () => {
 }
 .btn-rename:hover {
   color: var(--bs-secondary);
+}
+
+.draggable-original-source {
+  display: none !important;
+}
+
+.draggable-source {
+  z-index: 1500;
+  background-color: var(--bs-secondary-bg) !important;
+  opacity: .75;
+}
+
+.draggable-over {
+  background-color: rgba(var(--bs-primary-rgb), 0.25) !important;
 }
 </style>

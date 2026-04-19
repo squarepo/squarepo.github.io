@@ -46,12 +46,14 @@ export const useFsStore = defineStore("fs", {
       const content = await this.pfs.readFile(path, "utf8");
       return content;
     },
-    async readDir(path: string, recursive: boolean = false) {
+    async readDir(path: string, recursive = false) {
       const entryNames = await this.pfs.readdir(path);
       entryNames.sort((a, b) => a.localeCompare(b));
       return await Promise.all(entryNames.map(async (name) => {
-        const entry = await this.getEntry(this.normalizePath(`/${path}/${name}`));
-        if (entry.type === "dir") entry.children = await this.readDir(entry.path);
+        const entry = await this.getEntry(this.normalizePath(`${path}/${name}`));
+        if (recursive) {
+          if (entry.type === "dir") entry.children = await this.readDir(entry.path, true);
+        }
         return entry;
       }));
     },
@@ -72,6 +74,14 @@ export const useFsStore = defineStore("fs", {
       await this.pfs.rename(oldPath, newPath);
       this.root.children = await this.readDir("/", true);
     },
+    async moveEntry(entryPath: string, dirPath: string) {
+      const entry = await this.getEntry(entryPath);
+      if (entry.type === "file") {
+        await this.renameFile(entryPath, this.normalizePath(`${dirPath}/${entry.name}`));
+      } else if (entry.type === "dir") {
+        await this.renameDir(entryPath, this.normalizePath(`${dirPath}/${entry.name}`));
+      }
+    },
     async updateFileContent(path: string, content: string) {
       const file = await this.getEntry(path) as File;
       if (file.content === content) return;
@@ -79,20 +89,24 @@ export const useFsStore = defineStore("fs", {
       this.root.children = await this.readDir("/", true);
     },
 
-    async deleteFile(path: string) {
+    async deleteFile(path: string, refresh = true) {
       await this.pfs.unlink(path);
-      this.root.children = await this.readDir("/", true);
+      if (refresh) {
+        this.root.children = await this.readDir("/", true)
+      }
     },
-    async deleteDir(path: string, recursive: boolean = false) {
+    async deleteDir(path: string, recursive = false, refresh = true) {
       if (recursive) {
         const entries = await this.readDir(path);
         for (const entry of entries) {
-          if (entry.type === "dir") await this.deleteDir(entry.path, true);
-          else if (entry.type === "file") await this.deleteFile(entry.path);
+          if (entry.type === "dir") await this.deleteDir(entry.path, true, false);
+          else if (entry.type === "file") await this.deleteFile(entry.path, false);
         }
       }
       await this.pfs.rmdir(path);
-      this.root.children = await this.readDir("/", true);
+      if (refresh) {
+        this.root.children = await this.readDir("/", true)
+      }
     },
 
     getName(path: string) {

@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import Sortable from 'sortablejs';
 import type { File } from '~/types/fs';
 const fsStore = useFsStore();
 const parentDir = fsStore.getParentPath(fsStore.currentEntry?.path ?? "/");
@@ -10,16 +9,8 @@ for (const col of columns) {
 
 onMounted(() => {
   const containerEl = document.querySelector(".kanban-container") as HTMLDivElement;
-  new Sortable(containerEl, {
-    group: 'container',
-    animation: 150,
-  });
   const columnEls = document.querySelectorAll(".kanban-column") as NodeListOf<HTMLDivElement>;
   for (const columnEl of columnEls) {
-    new Sortable(columnEl, {
-      group: 'column',
-      animation: 150,
-    });
   }
 });
 
