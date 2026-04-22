@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import type { File, Dir } from '~/types/fs';
+import type { File, Dir } from '~/domain/filesystem/fs';
+import { getParentPath, normalizePath } from '~/domain/filesystem/fs.utils';
 
 const props = defineProps<{ entries: (File | Dir)[] }>();
 const fsStore = useFsStore();
@@ -13,31 +14,31 @@ function toggleDir(path: string) {
 }
 
 async function deleteFile(path: string) {
-  const entry = await fsStore.getEntry(path);
+  const entry = await fsStore.fs.getEntry(path);
   if (confirm(`${entry.type === "file" ? "O arquivo" : "A pasta"} "${entry.name}" será excluíd${entry.type === "file" ? "o" : "a"}`)) {
     await fsStore.deleteFile(path);
-    if (!(fsStore.currentEntry && await fsStore.exists(fsStore.currentEntry.path))) {
+    if (!(fsStore.currentEntry && await fsStore.fs.exists(fsStore.currentEntry.path))) {
       await fsStore.changeURL("/");
     }
   }
 }
 
 async function deleteDir(path: string, recursive: boolean) {
-  const entry = await fsStore.getEntry(path);
+  const entry = await fsStore.fs.getEntry(path);
   if (confirm(`${entry.type === "file" ? "O arquivo" : "A pasta"} "${entry.name}" será excluíd${entry.type === "file" ? "o" : "a"}`)) {
     await fsStore.deleteDir(path, recursive);
-    if (!(fsStore.currentEntry && await fsStore.exists(fsStore.currentEntry.path))) {
+    if (!(fsStore.currentEntry && await fsStore.fs.exists(fsStore.currentEntry.path))) {
       await fsStore.changeURL("/");
     }
   }
 }
 
 async function renameFile(path: string) {
-  const entry = await fsStore.getEntry(path);
+  const entry = await fsStore.fs.getEntry(path);
   if (entry.type !== "file") return;
   const name = prompt(`Renomear arquivo`, entry.name)?.trim();
   if (name === undefined) return;
-  const newPath = fsStore.normalizePath(`/${fsStore.getParentPath(path)}/${name}`);
+  const newPath = normalizePath(`/${getParentPath(path)}/${name}`);
   await fsStore.renameFile(path, newPath);
   if (path === fsStore.currentEntry?.path) {
     await fsStore.changeURL(newPath);
@@ -45,11 +46,11 @@ async function renameFile(path: string) {
 }
 
 async function renameDir(path: string) {
-  const entry = await fsStore.getEntry(path);
+  const entry = await fsStore.fs.getEntry(path);
   if (entry.type !== "dir") return;
   const name = prompt(`Renomear pasta`, entry.name)?.trim();
   if (name === undefined) return;
-  const newPath = fsStore.normalizePath(`/${fsStore.getParentPath(path)}/${name}`);
+  const newPath = normalizePath(`/${getParentPath(path)}/${name}`);
   await fsStore.renameDir(path, newPath);
   if (path === fsStore.currentEntry?.path) {
     await fsStore.changeURL(newPath);

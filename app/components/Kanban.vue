@@ -1,10 +1,11 @@
 <script setup lang="ts">
-import type { File } from '~/types/fs';
+import type { File } from '~/domain/filesystem/fs';
+import { getParentPath, normalizePath } from '~/domain/filesystem/fs.utils';
 const fsStore = useFsStore();
-const parentDir = fsStore.getParentPath(fsStore.currentEntry?.path ?? "/");
-const columns = (await fsStore.readDir(parentDir)).filter(entry => entry.type === "dir");
+const parentDir = getParentPath(fsStore.currentEntry?.path ?? "/");
+const columns = (await fsStore.fs.readDir(parentDir)).filter(entry => entry.type === "dir");
 for (const col of columns) {
-  col.children = (await fsStore.readDir(col.path)).filter(entry => entry.type === "file");
+  col.children = (await fsStore.fs.readDir(col.path)).filter(entry => entry.type === "file");
 }
 
 onMounted(() => {
@@ -18,7 +19,7 @@ async function createFile(path: string) {
   if (fsStore.currentEntry) {
     const name = prompt(`Criar novo cartão`,  await getName(path, "Cartão"))?.trim();
     if (name === undefined) return;
-    const normalizedPath = fsStore.normalizePath(`/${path}/${name}`);
+    const normalizedPath = normalizePath(`/${path}/${name}`);
     await fsStore.createFile(normalizedPath, "");
   }
 }
@@ -26,7 +27,7 @@ async function createFile(path: string) {
 async function getName(path: string, baseName: string) {
   let name: string = baseName;
   let num = 0;
-  while (await fsStore.exists(fsStore.normalizePath(`/${path}/${name}`))) {
+  while (await fsStore.fs.exists(normalizePath(`/${path}/${name}`))) {
     name = `${baseName} ${++num}`;
   }
   return name;

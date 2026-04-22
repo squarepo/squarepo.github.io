@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { File } from '~/types/fs';
+import type { File } from '~/domain/filesystem/fs';
 
 const fsStore = useFsStore();
 const props = defineProps<{ file: File }>();
