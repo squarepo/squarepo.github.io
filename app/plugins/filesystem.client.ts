@@ -1,13 +1,12 @@
 import LightningFS from '@isomorphic-git/lightning-fs';
 
 export default defineNuxtPlugin({
-  name: "fs",
+  name: "filesystem",
   setup() {
-    const fs = new LightningFS("fs");
+    const filesystem = new LightningFS("squarepo");
     return {
       provide: {
-        fs,
-        pfs: fs.promises
+        filesystem: filesystem.promises
       }
     }
   }

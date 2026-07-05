@@ -1,13 +1,13 @@
 <script setup lang="ts">
-import type { File } from '~/types/fs';
+import type { File } from '~/types/filesystem';
 
-const fsStore = useFsStore();
+const filesystemStore = useFilesystemStore();
 const props = defineProps<{ file: File }>();
 const textareaEl = ref<HTMLTextAreaElement | null>(null);
 
 async function updateFileContent(newContent: string) {
   if (textareaEl.value) updateTextareaHeight(textareaEl.value);
-  await fsStore.updateFileContent(props.file.path, newContent);
+  await filesystemStore.updateFileContent(props.file.path, newContent);
 }
 
 function updateTextareaHeight(el: HTMLTextAreaElement) {

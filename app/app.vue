@@ -1,7 +1,7 @@
 <script setup lang="ts">
-  const fsStore = useFsStore();
+  const filesystemStore = useFilesystemStore();
   useHead({
-    title: () => fsStore.currentEntry && fsStore.currentEntry.path !== "/" ? fsStore.currentEntry.name : "Squarepo"
+    title: () => filesystemStore.currentEntry && filesystemStore.currentEntry.path !== "/" ? filesystemStore.currentEntry.name : "Squarepo"
   });
 </script>
 
@@ -12,22 +12,22 @@
 
     <Navbar></Navbar>
 
-    <template v-if="fsStore.currentEntry">
-      <template v-if="fsStore.currentEntry.name === 'db.json'">
+    <template v-if="filesystemStore.currentEntry">
+      <template v-if="filesystemStore.currentEntry.name === 'db.json'">
         <TitleEditor></TitleEditor>
         <Kanban></Kanban>
       </template>
       <template v-else>
         <!-- File & Dir -->
-        <div v-if="fsStore.currentEntry.type === 'file'" class="w-100 h-100 overflow-auto d-flex flex-column">
+        <div v-if="filesystemStore.currentEntry.type === 'file'" class="w-100 h-100 overflow-auto d-flex flex-column">
           <div class="container p-0 my-3 w-100 h-100 d-flex flex-column">
             <TitleEditor></TitleEditor>
-            <TextEditor :file="fsStore.currentEntry"></TextEditor>
+            <TextEditor :file="filesystemStore.currentEntry"></TextEditor>
           </div>
         </div>
-        <div v-else-if="fsStore.currentEntry.type === 'dir'" class="w-100 h-100 overflow-auto d-flex flex-column">
+        <div v-else-if="filesystemStore.currentEntry.type === 'dir'" class="w-100 h-100 overflow-auto d-flex flex-column">
           <div class="container my-3 w-100 h-100 d-flex flex-column">
-            <DirList :dir="fsStore.currentEntry"></DirList>
+            <DirList :dir="filesystemStore.currentEntry"></DirList>
           </div>
         </div>
       </template>

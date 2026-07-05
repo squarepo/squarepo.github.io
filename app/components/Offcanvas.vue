@@ -1,7 +1,7 @@
 <script setup lang="ts">
 
 const { $bootstrap } = useNuxtApp();
-const fsStore = useFsStore();
+const filesystemStore = useFilesystemStore();
 const route = useRoute();
 
 onMounted(() => {
@@ -9,41 +9,41 @@ onMounted(() => {
   watch(
     () => route.fullPath,
     async (fullPath) => {
-      const entry = await fsStore.getEntry(fullPath);
+      const entry = await filesystemStore.getEntry(fullPath);
       if (entry.type === "file") {
         offcanvas.hide();
       } else if (entry.type === "dir") {
-        fsStore.expandedDirs.add(entry.path);
+        filesystemStore.expandedDirs.add(entry.path);
       }
     }
   );
 });
 
 async function createFile() {
-  if (fsStore.currentEntry) {
-    const path = fsStore.currentEntry?.type === "file" ? fsStore.getParentPath(fsStore.currentEntry?.path) : fsStore.currentEntry?.path;
+  if (filesystemStore.currentEntry) {
+    const path = filesystemStore.currentEntry?.type === "file" ? filesystemStore.getParentPath(filesystemStore.currentEntry?.path) : filesystemStore.currentEntry?.path;
     const name = prompt(`Criar novo arquivo`,  await getName(path, "Arquivo"))?.trim();
     if (name === undefined) return;
-    const normalizedPath = fsStore.normalizePath(`/${path}/${name}`);
-    await fsStore.createFile(normalizedPath, "");
-    await fsStore.changeURL(normalizedPath);
+    const normalizedPath = filesystemStore.normalizePath(`/${path}/${name}`);
+    await filesystemStore.createFile(normalizedPath, "");
+    await filesystemStore.changeURL(normalizedPath);
   }
 }
 
 async function createDir() {
-  if (fsStore.currentEntry) {
-    const path = fsStore.currentEntry.type === "file" ? fsStore.getParentPath(fsStore.currentEntry.path) : fsStore.currentEntry.path;
+  if (filesystemStore.currentEntry) {
+    const path = filesystemStore.currentEntry.type === "file" ? filesystemStore.getParentPath(filesystemStore.currentEntry.path) : filesystemStore.currentEntry.path;
     const name = prompt(`Criar nova pasta`, await getName(path, "Pasta"))?.trim();
     if (name === undefined) return;
-    const normalizedPath = fsStore.normalizePath(`/${path}/${name}`);
-    await fsStore.createDir(normalizedPath);
+    const normalizedPath = filesystemStore.normalizePath(`/${path}/${name}`);
+    await filesystemStore.createDir(normalizedPath);
   }
 }
 
 async function getName(path: string, baseName: string) {
   let name: string = baseName;
   let num = 0;
-  while (await fsStore.exists(fsStore.normalizePath(`/${path}/${name}`))) {
+  while (await filesystemStore.exists(filesystemStore.normalizePath(`/${path}/${name}`))) {
     name = `${baseName} ${++num}`;
   }
   return name;
@@ -60,7 +60,7 @@ async function getName(path: string, baseName: string) {
     </div>
 
     <div class="offcanvas-body">
-      <DirTree v-if="fsStore.root.children.length" :entries="fsStore.root.children"></DirTree>
+      <DirTree v-if="filesystemStore.root.children.length" :entries="filesystemStore.root.children"></DirTree>
       <div v-else class="text-body-tertiary w-100 h-100 d-flex justify-content-center align-items-center"><span>Nenhum arquivo ou pasta</span></div>
     </div>
     

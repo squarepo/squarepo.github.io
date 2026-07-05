@@ -1,21 +1,21 @@
 <script setup lang="ts">
-  const fsStore = useFsStore();
+  const filesystemStore = useFilesystemStore();
 
   async function changeFileName(newName: string) {
     newName = newName.trim();
-    if (fsStore.currentEntry) {
-      const parentPath = fsStore.getParentPath(fsStore.currentEntry.path);
+    if (filesystemStore.currentEntry) {
+      const parentPath = filesystemStore.getParentPath(filesystemStore.currentEntry.path);
       const newPath = parentPath === "/" ? `/${newName}` : `${parentPath}/${newName}`;
-      if (fsStore.normalizePath(fsStore.currentEntry.path) === fsStore.normalizePath(newPath)) return;
-      if (await fsStore.exists(newPath)) return;
-      await fsStore.renameFile(fsStore.currentEntry.path, newPath);
-      await fsStore.changeURL(newPath, 'replace');
+      if (filesystemStore.normalizePath(filesystemStore.currentEntry.path) === filesystemStore.normalizePath(newPath)) return;
+      if (await filesystemStore.exists(newPath)) return;
+      await filesystemStore.renameFile(filesystemStore.currentEntry.path, newPath);
+      await filesystemStore.changeURL(newPath, 'replace');
     }
   }
   function revertName(textAreaValue: string) {
-    if (fsStore.currentEntry && textAreaValue !== fsStore.currentEntry.name) {
+    if (filesystemStore.currentEntry && textAreaValue !== filesystemStore.currentEntry.name) {
       const textAreaEl = document.getElementById("title-editor") as HTMLTextAreaElement;
-      textAreaEl.value = fsStore.currentEntry.name;
+      textAreaEl.value = filesystemStore.currentEntry.name;
     }
   }
 </script>
@@ -26,7 +26,7 @@
     class="form-control p-3 border-0 shadow-none fs-1 w-100"
     style="box-sizing: border-box;"
     placeholder="Título..."
-    :value="fsStore.currentEntry?.name"
+    :value="filesystemStore.currentEntry?.name"
     @input="changeFileName(($event.target as HTMLTextAreaElement).value)"
     @blur="revertName(($event.target as HTMLTextAreaElement).value)"
   >

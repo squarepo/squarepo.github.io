@@ -1,13 +1,13 @@
 <script setup lang="ts">
-import type { File, Dir } from '~/types/fs';
+import type { File, Dir } from '~/types/filesystem';
 
-const fsStore = useFsStore();
+const filesystemStore = useFilesystemStore();
 const route = useRoute();
 const pathEntries = ref<(File | Dir)[]>([]);
 watch(
   () => route.fullPath,
   async (fullPath) => {
-    pathEntries.value = await fsStore.getPathEntries(fsStore.normalizePath(decodeURIComponent(route.path)));
+    pathEntries.value = await filesystemStore.getPathEntries(filesystemStore.normalizePath(decodeURIComponent(route.path)));
   },
   { immediate: true }
 );

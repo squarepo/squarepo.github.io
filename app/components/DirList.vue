@@ -1,92 +1,92 @@
 <script setup lang="ts">
 import { Draggable, Droppable } from '@shopify/draggable';
-import type { File, Dir } from '~/types/fs';
+import type { File, Dir } from '~/types/filesystem';
 
 const props = defineProps<{ dir: Dir }>();
-const fsStore = useFsStore();
+const filesystemStore = useFilesystemStore();
 
 async function deleteFile(path: string) {
-  const entry = await fsStore.getEntry(path);
+  const entry = await filesystemStore.getEntry(path);
   if (confirm(`${entry.type === "file" ? "O arquivo" : "A pasta"} "${entry.name}" será excluíd${entry.type === "file" ? "o" : "a"}`)) {
-    await fsStore.deleteFile(path);
-    props.dir.children = await fsStore.readDir(props.dir.path);
-    if (!(fsStore.currentEntry && await fsStore.exists(fsStore.currentEntry.path))) {
-      await fsStore.changeURL("/");
+    await filesystemStore.deleteFile(path);
+    props.dir.children = await filesystemStore.readDir(props.dir.path);
+    if (!(filesystemStore.currentEntry && await filesystemStore.exists(filesystemStore.currentEntry.path))) {
+      await filesystemStore.changeURL("/");
     }
   }
 }
 
 async function deleteDir(path: string, recursive: boolean) {
-  const entry = await fsStore.getEntry(path);
+  const entry = await filesystemStore.getEntry(path);
   if (confirm(`${entry.type === "file" ? "O arquivo" : "A pasta"} "${entry.name}" será excluíd${entry.type === "file" ? "o" : "a"}`)) {
-    await fsStore.deleteDir(path, recursive);
-    props.dir.children = await fsStore.readDir(props.dir.path);
-    if (!(fsStore.currentEntry && await fsStore.exists(fsStore.currentEntry.path))) {
-      await fsStore.changeURL("/");
+    await filesystemStore.deleteDir(path, recursive);
+    props.dir.children = await filesystemStore.readDir(props.dir.path);
+    if (!(filesystemStore.currentEntry && await filesystemStore.exists(filesystemStore.currentEntry.path))) {
+      await filesystemStore.changeURL("/");
     }
   }
 }
 
 async function renameFile(path: string) {
-  const entry = await fsStore.getEntry(path);
+  const entry = await filesystemStore.getEntry(path);
   if (entry.type !== "file") return;
   const name = prompt(`Renomear arquivo`, entry.name)?.trim();
   if (name === undefined) return;
-  const newPath = fsStore.normalizePath(`/${fsStore.getParentPath(path)}/${name}`);
-  await fsStore.renameFile(path, newPath);
-  props.dir.children = await fsStore.readDir(props.dir.path);
-  if (path === fsStore.currentEntry?.path) {
-    await fsStore.changeURL(newPath);
+  const newPath = filesystemStore.normalizePath(`/${filesystemStore.getParentPath(path)}/${name}`);
+  await filesystemStore.renameFile(path, newPath);
+  props.dir.children = await filesystemStore.readDir(props.dir.path);
+  if (path === filesystemStore.currentEntry?.path) {
+    await filesystemStore.changeURL(newPath);
   }
 }
 
 async function renameDir(path: string) {
-  const entry = await fsStore.getEntry(path);
+  const entry = await filesystemStore.getEntry(path);
   if (entry.type !== "dir") return;
   const name = prompt(`Renomear pasta`, entry.name)?.trim();
   if (name === undefined) return;
-  const newPath = fsStore.normalizePath(`/${fsStore.getParentPath(path)}/${name}`);
-  await fsStore.renameDir(path, newPath);
-  props.dir.children = await fsStore.readDir(props.dir.path);
-  if (path === fsStore.currentEntry?.path) {
-    await fsStore.changeURL(newPath);
+  const newPath = filesystemStore.normalizePath(`/${filesystemStore.getParentPath(path)}/${name}`);
+  await filesystemStore.renameDir(path, newPath);
+  props.dir.children = await filesystemStore.readDir(props.dir.path);
+  if (path === filesystemStore.currentEntry?.path) {
+    await filesystemStore.changeURL(newPath);
   }
 }
 
 async function createFile() {
-  if (fsStore.currentEntry) {
-    const path = fsStore.currentEntry?.type === "file" ? fsStore.getParentPath(fsStore.currentEntry?.path) : fsStore.currentEntry?.path;
+  if (filesystemStore.currentEntry) {
+    const path = filesystemStore.currentEntry?.type === "file" ? filesystemStore.getParentPath(filesystemStore.currentEntry?.path) : filesystemStore.currentEntry?.path;
     const name = prompt(`Criar novo arquivo`,  await getName(path, "Arquivo"))?.trim();
     if (name === undefined) return;
-    const normalizedPath = fsStore.normalizePath(`/${path}/${name}`);
-    await fsStore.createFile(normalizedPath, "");
-    props.dir.children = await fsStore.readDir(props.dir.path);
-    await fsStore.changeURL(normalizedPath);
+    const normalizedPath = filesystemStore.normalizePath(`/${path}/${name}`);
+    await filesystemStore.createFile(normalizedPath, "");
+    props.dir.children = await filesystemStore.readDir(props.dir.path);
+    await filesystemStore.changeURL(normalizedPath);
   }
 }
 
 async function createDir() {
-  if (fsStore.currentEntry) {
-    const path = fsStore.currentEntry.type === "file" ? fsStore.getParentPath(fsStore.currentEntry.path) : fsStore.currentEntry.path;
+  if (filesystemStore.currentEntry) {
+    const path = filesystemStore.currentEntry.type === "file" ? filesystemStore.getParentPath(filesystemStore.currentEntry.path) : filesystemStore.currentEntry.path;
     const name = prompt(`Criar nova pasta`, await getName(path, "Pasta"))?.trim();
     if (name === undefined) return;
-    const normalizedPath = fsStore.normalizePath(`/${path}/${name}`);
-    await fsStore.createDir(normalizedPath);
-    props.dir.children = await fsStore.readDir(props.dir.path);
+    const normalizedPath = filesystemStore.normalizePath(`/${path}/${name}`);
+    await filesystemStore.createDir(normalizedPath);
+    props.dir.children = await filesystemStore.readDir(props.dir.path);
   }
 }
 
 async function getName(path: string, baseName: string) {
   let name: string = baseName;
   let num = 0;
-  while (await fsStore.exists(fsStore.normalizePath(`/${path}/${name}`))) {
+  while (await filesystemStore.exists(filesystemStore.normalizePath(`/${path}/${name}`))) {
     name = `${baseName} ${++num}`;
   }
   return name;
 }
 
-watch(() => fsStore.root.children, async () => {
-  props.dir.children = await fsStore.readDir(props.dir.path);
+watch(() => filesystemStore.root.children, async () => {
+  props.dir.children = await filesystemStore.readDir(props.dir.path);
 });
 
 const ul = ref<HTMLUListElement | null>(null);
@@ -131,7 +131,7 @@ onMounted(() => {
     if (isDir && dragOverEl !== e.source) {
       const draggedPath = e.source.dataset["path"];
       const droppedPath = dragOverEl?.dataset["path"];
-      fsStore.moveEntry(draggedPath!, droppedPath!);
+      filesystemStore.moveEntry(draggedPath!, droppedPath!);
     }
     dragOverEl = null;
   });
@@ -143,14 +143,14 @@ onMounted(() => {
   <div class="d-flex flex-column gap-3">
     <ul ref="ul" v-show="!(props.dir.path === '/' && !props.dir.children.length)" class="list-group w-100">
       <li
-        :data-path="fsStore.getParentPath(dir.path)"
+        :data-path="filesystemStore.getParentPath(dir.path)"
         data-type="dir"
-        v-if="fsStore.currentEntry?.path !== '/'"
+        v-if="filesystemStore.currentEntry?.path !== '/'"
         class="parent-dir list-group-item p-0 d-flex align-items-center"
       >
         <div class="d-flex align-items-center w-100">
           <i class="bi bi-folder fs-5 ms-2 text-warning"></i>
-          <NuxtLink :to="fsStore.getParentPath(dir.path)" class="w-100 p-2 text-truncate text-body text-decoration-none">..</NuxtLink>
+          <NuxtLink :to="filesystemStore.getParentPath(dir.path)" class="w-100 p-2 text-truncate text-body text-decoration-none">..</NuxtLink>
         </div>
       </li>
       <li
