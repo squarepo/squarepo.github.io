@@ -1,28 +1,16 @@
 <script setup lang="ts">
-import type { File, Dir } from '~/domain/filesystem/fs';
-import { normalizePath } from '~/domain/filesystem/fs.utils';
+import type { File, Dir } from '~/types/fs';
 
 const fsStore = useFsStore();
 const route = useRoute();
 const pathEntries = ref<(File | Dir)[]>([]);
-
-const view = defineModel<"fs" | "appFs">('view');
-
 watch(
   () => route.fullPath,
   async (fullPath) => {
-    pathEntries.value = await fsStore.getPathEntries(normalizePath(decodeURIComponent(route.path)));
+    pathEntries.value = await fsStore.getPathEntries(fsStore.normalizePath(decodeURIComponent(route.path)));
   },
   { immediate: true }
 );
-
-function toggleView() {
-  if (view.value === "fs") {
-    view.value = "appFs";
-  } else if (view.value === "appFs") {
-    view.value = "fs";
-  }
-}
 </script>
 
 <template>
@@ -48,9 +36,6 @@ function toggleView() {
           <div class="ps-2"></div>
         </ol>
       </div>
-      <button type="button" class="btn fs-2 p-1 m-2" @click="toggleView()">
-        <i class="bi" :class="{ 'bi-eye': view === 'fs', 'bi-eye-fill': view === 'appFs' }"></i>
-      </button>
     </div>
   </nav>
 </template>
