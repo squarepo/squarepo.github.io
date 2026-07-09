@@ -1,8 +1,5 @@
 <script setup lang="ts">
-  import { FILESYSTEM_ENTRIES } from './constants/filesystem';
-  import type { File } from './types/filesystem';
   const filesystemStore = useFilesystemStore();
-  const settingsStore = useSettingsStore();
   useHead({
     title: () => filesystemStore.currentEntry && filesystemStore.currentEntry.path !== "/" ? filesystemStore.currentEntry.name : "Squarepo"
   });
@@ -10,7 +7,7 @@
 
 <template>
   <div class="w-100 h-100 d-flex flex-column">
-
+    
     <Header></Header>
 
     <Navigation></Navigation>
@@ -18,26 +15,12 @@
     <template v-if="filesystemStore.currentEntry">
 
       <template v-if="filesystemStore.raw">
-        <div
-          v-if="
-            filesystemStore.currentEntry.type === 'file' ||
-            filesystemStore.currentEntry.type === 'settings' ||
-            filesystemStore.currentEntry.type === 'properties'
-          "
-          class="w-100 h-100 overflow-auto d-flex flex-column"
-        >
+        <div v-if="['file', 'settings', 'properties'].includes(filesystemStore.currentEntry.type)" class="w-100 h-100 overflow-auto d-flex flex-column">
           <div class="container p-0 my-3 w-100 h-100 d-flex flex-column">
-            <FileView :file="filesystemStore.currentEntry"></FileView>
+            <FileView></FileView>
           </div>
         </div>
-        <div
-          v-else-if="
-            filesystemStore.currentEntry.type === 'dir' ||
-            filesystemStore.currentEntry.type === 'page' ||
-            filesystemStore.currentEntry.type === 'database'
-          "
-          class="w-100 h-100 overflow-auto d-flex flex-column"
-        >
+        <div v-else-if="['dir', 'page', 'database'].includes(filesystemStore.currentEntry.type)" class="w-100 h-100 overflow-auto d-flex flex-column">
           <div class="container my-3 w-100 h-100 d-flex flex-column">
             <DirView></DirView>
           </div>
@@ -45,19 +28,15 @@
       </template>
 
       <template v-else>
-        <FileSettingsView v-if="filesystemStore.currentEntry.type === 'settings'" :settings="filesystemStore.currentEntry"></FileSettingsView>
-        <FilePropertiesView v-else-if="filesystemStore.currentEntry.type === 'properties'" :properties="filesystemStore.currentEntry"></FilePropertiesView>
-
-        <template v-else-if="filesystemStore.currentEntry.type === 'page'">
-          <FileView v-if="settingsStore.rootSettings.view == 'App'" :file="filesystemStore.currentEntry.mainFile!"></FileView>
-          <DirView v-else></DirView>
+        <template v-if="filesystemStore.currentEntry.type === 'settings'">
+          <FileSettingsView :settings="filesystemStore.currentEntry"></FileSettingsView>
         </template>
   
         <template v-else>
           <!-- File & Dir -->
           <div v-if="filesystemStore.currentEntry.type === 'file'" class="w-100 h-100 overflow-auto d-flex flex-column">
             <div class="container p-0 my-3 w-100 h-100 d-flex flex-column">
-              <FileView :file="filesystemStore.currentEntry"></FileView>
+              <FileView></FileView>
             </div>
           </div>
           <div v-else-if="filesystemStore.currentEntry.type === 'dir'" class="w-100 h-100 overflow-auto d-flex flex-column">

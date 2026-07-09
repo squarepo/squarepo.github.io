@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { File } from '~/types/filesystem';
 const filesystemStore = useFilesystemStore();
-const parentDir = filesystemStore.getParentPath(filesystemStore.currentEntry?.path ?? "/");
+const parentDir = getParentPath(filesystemStore.currentEntry?.path ?? "/");
 const columns = (await filesystemStore.readDir(parentDir)).filter(entry => entry.type === "dir");
 for (const col of columns) {
   col.children = (await filesystemStore.readDir(col.path)).filter(entry => entry.type === "file");
@@ -18,7 +18,7 @@ async function createFile(path: string) {
   if (filesystemStore.currentEntry) {
     const name = prompt(`Criar novo cartão`,  await getName(path, "Cartão"))?.trim();
     if (name === undefined) return;
-    const normalizedPath = filesystemStore.normalizePath(`/${path}/${name}`);
+    const normalizedPath = normalizePath(`/${path}/${name}`);
     await filesystemStore.createFile(normalizedPath, "");
   }
 }
@@ -26,7 +26,7 @@ async function createFile(path: string) {
 async function getName(path: string, baseName: string) {
   let name: string = baseName;
   let num = 0;
-  while (await filesystemStore.exists(filesystemStore.normalizePath(`/${path}/${name}`))) {
+  while (await filesystemStore.exists(normalizePath(`/${path}/${name}`))) {
     name = `${baseName} ${++num}`;
   }
   return name;

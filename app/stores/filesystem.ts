@@ -1,12 +1,15 @@
 import LightningFS from '@isomorphic-git/lightning-fs';
 import { defineStore } from "pinia";
 import type { File, Dir, Entry } from '~/types/filesystem';
+import { getName, getParentPath, normalizePath } from "~/utils/path";
 
 export const useFilesystemStore = defineStore("filesystem", () => {
 
   const { $filesystem } = useNuxtApp();
 
   const currentEntry = ref<Entry | null>(null);
+
+  const raw = ref<boolean>(false);
 
   const expandedDirs = ref(new Set<string>());
 
@@ -17,68 +20,91 @@ export const useFilesystemStore = defineStore("filesystem", () => {
     children: []
   });
 
+
+
+
+
   async function createFile(path: string, content: string) {
-    if (await exists(path)) return;
-    await $filesystem.writeFile(path, content);
-    root.value.children = await readDir("/", true);
+    await $filesystem.createFile(path, content);
+    await refresh();
   }
   async function createDir(path: string) {
-    if (await exists(path)) return;
-    await $filesystem.mkdir(path);
-    root.value.children = await readDir("/", true);
+    await $filesystem.createDir(path);
+    await refresh();
   }
 
+  async function renameFile(path: string, newName: string) {
+    await $filesystem.renameFile(path, newName);
+    await refresh();
+  }
+  async function renameDir(path: string, newName: string) {
+    await $filesystem.renameDir(path, newName);
+  }
+
+  async function moveEntry(entryPath: string, dirPath: string) {
+    await $filesystem.moveEntry(entryPath, dirPath);
+  }
+
+  async function deleteFile(path: string) {
+    await $filesystem.deleteFile(path);
+    await refresh();
+  }
+  async function deleteDir(path: string, recursive = false, refresh = true) {
+    await $filesystem.deleteDir(path, recursive, refresh);
+  }
+
+  async function refresh() {
+    root.value.children = await $filesystem.readDir("/", true);
+  }
+
+  // open(...)
+  // navigate(...)
+
+  // expand(...)
+  // collapse(...)
+  // toggle(...)
+
+  async function loadRoot() {
+    const route = useRoute();
+    const pathEntries = await getPathEntries(normalizePath(decodeURIComponent(route.path)));
+    root.value.children = await readDir("/", true);
+    for (const entry of pathEntries) {
+      if (entry.type === "dir" && entry.path !== "/") {
+        expandedDirs.value.add(entry.path);
+      }
+    }
+  }
+
+  function startRouteSync() {
+    const route = useRoute();
+    watch(
+      () => route.fullPath,
+      async (fullPath) => {
+        await changeCurrentEntry(fullPath);
+      },
+      { immediate: true }
+    );
+  }
+
+
+
+
+
+
+
+
+
   async function getEntry(path: string) {
-    const stat = await $filesystem.stat(path);
-    const entry = {
-      name: getName(path),
-      path,
-      type: stat.type,
-      ...(stat.type === "file" && { content: await readFile(path) }),
-      ...(stat.type === "dir" && { children: [] }),
-    } as (File | Dir);
-    return entry;
+    return await $filesystem.getEntry(path);
   }
   async function readFile(path: string) {
-    const content = await $filesystem.readFile(path, "utf8");
+    const content = await $filesystem.readFile(path);
     return content;
   }
   async function readDir(path: string, recursive = false) {
-    const entryNames = await $filesystem.readdir(path);
-    entryNames.sort((a, b) => a.localeCompare(b));
-    return await Promise.all(entryNames.map(async (name) => {
-      const entry = await getEntry(normalizePath(`${path}/${name}`));
-      if (recursive) {
-        if (entry.type === "dir") entry.children = await readDir(entry.path, true);
-      }
-      return entry;
-    }));
+    return await $filesystem.readDir(path, recursive);
   }
 
-  async function renameFile(oldPath: string, newPath: string) {
-    if (oldPath === newPath) return;
-    const oldStat = await $filesystem.stat(oldPath);
-    if (oldStat.type !== "file") return;
-    if (await exists(newPath)) return;
-    await $filesystem.rename(oldPath, newPath);
-    root.value.children = await readDir("/", true);
-  }
-  async function renameDir(oldPath: string, newPath: string) {
-    if (oldPath === newPath) return;
-    const oldStat = await $filesystem.stat(oldPath);
-    if (oldStat.type !== "dir") return;
-    if (await exists(newPath)) return;
-    await $filesystem.rename(oldPath, newPath);
-    root.value.children = await readDir("/", true);
-  }
-  async function moveEntry(entryPath: string, dirPath: string) {
-    const entry = await getEntry(entryPath);
-    if (entry.type === "file") {
-      await renameFile(entryPath, normalizePath(`${dirPath}/${entry.name}`));
-    } else if (entry.type === "dir") {
-      await renameDir(entryPath, normalizePath(`${dirPath}/${entry.name}`));
-    }
-  }
   async function updateFileContent(path: string, content: string) {
     const file = await getEntry(path) as File;
     if (file.content === content) return;
@@ -86,45 +112,12 @@ export const useFilesystemStore = defineStore("filesystem", () => {
     root.value.children = await readDir("/", true);
   }
 
-  async function deleteFile(path: string, refresh = true) {
-    await $filesystem.unlink(path);
-    if (refresh) {
-      root.value.children = await readDir("/", true)
-    }
-  }
-  async function deleteDir(path: string, recursive = false, refresh = true) {
-    if (recursive) {
-      const entries = await readDir(path);
-      for (const entry of entries) {
-        if (entry.type === "dir") await deleteDir(entry.path, true, false);
-        else if (entry.type === "file") await deleteFile(entry.path, false);
-      }
-    }
-    await $filesystem.rmdir(path);
-    if (refresh) {
-      root.value.children = await readDir("/", true)
-    }
+  async function exists(path: string) {
+    return await $filesystem.exists(path);
   }
 
-  function getName(path: string) {
-    if (!path) return "";
-    const parts = path.split("/").filter(Boolean);
-    return parts.pop() || "/";
-  }
-  function getParentPath(path: string) {
-    const normalized = normalizePath(path);
-    if (normalized === "/") return "/";
-    const lastSlash = normalized.lastIndexOf("/");
-    return lastSlash <= 0 ? "/" : normalized.substring(0, lastSlash);
-  }
-  function normalizePath(path: string) {
-    if (!path) return "/";
-    let normalized = path.replace(/\/+/g, "/");
-    if (normalized.length > 1) {
-      normalized = normalized.replace(/\/$/, "");
-    }
-    return normalized;
-  }
+
+
   async function getPathEntries(path: string) {
     const entries: (File | Dir)[] = [];
     if (path === "/") return [await getEntry("/")];
@@ -145,22 +138,7 @@ export const useFilesystemStore = defineStore("filesystem", () => {
   async function changeCurrentEntry(path: string) {
     path = decodeURIComponent(path);
     try {
-      const stat = await $filesystem.stat(path);
-      if (stat.type === "file") {
-        currentEntry.value = {
-          name: getName(path),
-          path,
-          type: "file",
-          content: await readFile(path)
-        } as File;
-      } else if (stat.type === "dir") {
-        currentEntry.value = {
-          name: getName(path),
-          path,
-          type: "dir",
-          children: await readDir(path, true)
-        } as Dir;
-      }
+      currentEntry.value = await getEntry(path);
     } catch {
       currentEntry.value = null;
     }
@@ -173,19 +151,15 @@ export const useFilesystemStore = defineStore("filesystem", () => {
       router.replace(path);
     }
   }
-  async function exists(path: string) {
-    try {
-      await $filesystem.stat(path);
-      return true;
-    } catch {
-      return false;
-    }
-  }
 
   return {
     currentEntry,
     expandedDirs,
+    raw,
     root,
+
+    loadRoot,
+    startRouteSync,
 
     createFile,
     createDir,
@@ -202,9 +176,6 @@ export const useFilesystemStore = defineStore("filesystem", () => {
     deleteFile,
     deleteDir,
 
-    getName,
-    getParentPath,
-    normalizePath,
     getPathEntries,
     changeCurrentEntry,
     changeURL,

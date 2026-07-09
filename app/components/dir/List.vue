@@ -32,7 +32,7 @@ async function renameFile(path: string) {
   if (entry.type !== "file") return;
   const name = prompt(`Renomear arquivo`, entry.name)?.trim();
   if (name === undefined) return;
-  const newPath = filesystemStore.normalizePath(`/${filesystemStore.getParentPath(path)}/${name}`);
+  const newPath = normalizePath(`/${getParentPath(path)}/${name}`);
   await filesystemStore.renameFile(path, newPath);
   props.dir.children = await filesystemStore.readDir(props.dir.path);
   if (path === filesystemStore.currentEntry?.path) {
@@ -45,7 +45,7 @@ async function renameDir(path: string) {
   if (entry.type !== "dir") return;
   const name = prompt(`Renomear pasta`, entry.name)?.trim();
   if (name === undefined) return;
-  const newPath = filesystemStore.normalizePath(`/${filesystemStore.getParentPath(path)}/${name}`);
+  const newPath = normalizePath(`/${getParentPath(path)}/${name}`);
   await filesystemStore.renameDir(path, newPath);
   props.dir.children = await filesystemStore.readDir(props.dir.path);
   if (path === filesystemStore.currentEntry?.path) {
@@ -55,10 +55,10 @@ async function renameDir(path: string) {
 
 async function createFile() {
   if (filesystemStore.currentEntry) {
-    const path = filesystemStore.currentEntry?.type === "file" ? filesystemStore.getParentPath(filesystemStore.currentEntry?.path) : filesystemStore.currentEntry?.path;
+    const path = filesystemStore.currentEntry?.type === "file" ? getParentPath(filesystemStore.currentEntry?.path) : filesystemStore.currentEntry?.path;
     const name = prompt(`Criar novo arquivo`,  await getName(path, "Arquivo"))?.trim();
     if (name === undefined) return;
-    const normalizedPath = filesystemStore.normalizePath(`/${path}/${name}`);
+    const normalizedPath = normalizePath(`/${path}/${name}`);
     await filesystemStore.createFile(normalizedPath, "");
     props.dir.children = await filesystemStore.readDir(props.dir.path);
     await filesystemStore.changeURL(normalizedPath);
@@ -67,10 +67,10 @@ async function createFile() {
 
 async function createDir() {
   if (filesystemStore.currentEntry) {
-    const path = filesystemStore.currentEntry.type === "file" ? filesystemStore.getParentPath(filesystemStore.currentEntry.path) : filesystemStore.currentEntry.path;
+    const path = filesystemStore.currentEntry.type === "file" ? getParentPath(filesystemStore.currentEntry.path) : filesystemStore.currentEntry.path;
     const name = prompt(`Criar nova pasta`, await getName(path, "Pasta"))?.trim();
     if (name === undefined) return;
-    const normalizedPath = filesystemStore.normalizePath(`/${path}/${name}`);
+    const normalizedPath = normalizePath(`/${path}/${name}`);
     await filesystemStore.createDir(normalizedPath);
     props.dir.children = await filesystemStore.readDir(props.dir.path);
   }
@@ -79,7 +79,7 @@ async function createDir() {
 async function getName(path: string, baseName: string) {
   let name: string = baseName;
   let num = 0;
-  while (await filesystemStore.exists(filesystemStore.normalizePath(`/${path}/${name}`))) {
+  while (await filesystemStore.exists(normalizePath(`/${path}/${name}`))) {
     name = `${baseName} ${++num}`;
   }
   return name;
@@ -143,14 +143,14 @@ onMounted(() => {
   <div class="d-flex flex-column gap-3">
     <ul ref="ul" v-show="!(props.dir.path === '/' && !props.dir.children.length)" class="list-group w-100">
       <li
-        :data-path="filesystemStore.getParentPath(dir.path)"
+        :data-path="getParentPath(dir.path)"
         data-type="dir"
         v-if="filesystemStore.currentEntry?.path !== '/'"
         class="parent-dir list-group-item p-0 d-flex align-items-center"
       >
         <div class="d-flex align-items-center w-100">
           <i class="bi bi-folder fs-5 ms-2 text-warning"></i>
-          <NuxtLink :to="filesystemStore.getParentPath(dir.path)" class="w-100 p-2 text-truncate text-body text-decoration-none">..</NuxtLink>
+          <NuxtLink :to="getParentPath(dir.path)" class="w-100 p-2 text-truncate text-body text-decoration-none">..</NuxtLink>
         </div>
       </li>
       <li
