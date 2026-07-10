@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { FILESYSTEM_ENTRIES } from '~/constants/filesystem';
+import { DEFAULT_SETTINGS } from '~/defaults/settings';
 
 
 const { $bootstrap } = useNuxtApp();
@@ -34,9 +35,20 @@ async function createPage() {
   }
 }
 
+async function createSettings() {
+  if (filesystemStore.currentEntry) {
+    const path = ["file", "settings", "properties"].includes(filesystemStore.currentEntry?.type) ? getParentPath(filesystemStore.currentEntry?.path) : filesystemStore.currentEntry?.path;
+    const name = prompt(`Criar configurações`,  await getName(path, FILESYSTEM_ENTRIES.SETTINGS))?.trim();
+    if (name === undefined) return;
+    const normalizedPath = normalizePath(`/${path}/${name}`);
+    await filesystemStore.createFile(normalizedPath, JSON.stringify(DEFAULT_SETTINGS, null, 2));
+    await filesystemStore.changeURL(normalizedPath);
+  }
+}
+
 async function createFile() {
   if (filesystemStore.currentEntry) {
-    const path = filesystemStore.currentEntry?.type === "file" ? getParentPath(filesystemStore.currentEntry?.path) : filesystemStore.currentEntry?.path;
+    const path = ["file", "settings", "properties"].includes(filesystemStore.currentEntry?.type) ? getParentPath(filesystemStore.currentEntry?.path) : filesystemStore.currentEntry?.path;
     const name = prompt(`Criar novo arquivo`,  await getName(path, "Arquivo"))?.trim();
     if (name === undefined) return;
     const normalizedPath = normalizePath(`/${path}/${name}`);
@@ -47,7 +59,7 @@ async function createFile() {
 
 async function createDir() {
   if (filesystemStore.currentEntry) {
-    const path = filesystemStore.currentEntry.type === "file" ? getParentPath(filesystemStore.currentEntry.path) : filesystemStore.currentEntry.path;
+    const path = ["file", "settings", "properties"].includes(filesystemStore.currentEntry?.type) ? getParentPath(filesystemStore.currentEntry.path) : filesystemStore.currentEntry.path;
     const name = prompt(`Criar nova pasta`, await getName(path, "Pasta"))?.trim();
     if (name === undefined) return;
     const normalizedPath = normalizePath(`/${path}/${name}`);
@@ -95,6 +107,10 @@ async function getName(path: string, baseName: string) {
       <button type="button" class="btn btn-primary w-100 d-flex align-items-center justify-content-center gap-2" @click="createDir()">
         <i class="bi bi-folder fs-5"></i>
         <span>Nova pasta</span>
+      </button>
+      <button type="button" class="btn btn-primary d-flex align-items-center justify-content-center gap-2" @click="createSettings()">
+        <i class="bi bi-gear fs-5"></i>
+        <!-- <span>Nova pasta</span> -->
       </button>
     </div>
     

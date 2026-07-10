@@ -8,10 +8,10 @@ export class FilesystemService {
   constructor(private filesystem: LightningFS.PromisifiedFS) {}
 
   // Information
-  async exists(path: string) {
+  async exists(path: string, type?: "file" | "dir") {
     try {
-      await this.filesystem.stat(path);
-      return true;
+      const stat = await this.filesystem.stat(path);
+      return !type || stat.type === type;
     } catch {
       return false;
     }
@@ -25,15 +25,15 @@ export class FilesystemService {
   async createFile(path: string, content: string) {
     if (await this.exists(path)) return;
     await this.filesystem.writeFile(path, content);
-    
   }
+
   async createDir(path: string) {
     if (await this.exists(path)) return;
     await this.filesystem.mkdir(path);
   }
 
   // Read
-  async readDir(path: string, recursive: boolean) {
+  async readDir(path: string, recursive: boolean = false) {
     const entryNames = await this.filesystem.readdir(path);
     entryNames.sort((a, b) => a.localeCompare(b));
     return await Promise.all(entryNames.map(async (name) => {
@@ -63,9 +63,9 @@ export class FilesystemService {
 
     } else { // isDirectory
       const normalizedPath = path === "/" ? "/" : `${path}/`;
-      const type = await this.exists(normalizedPath + FILESYSTEM_ENTRIES.PAGE)
+      const type = await this.exists(normalizedPath + FILESYSTEM_ENTRIES.PAGE, "file")
         ? "page"
-        : await this.exists(normalizedPath + FILESYSTEM_ENTRIES.DATABASE)
+        : await this.exists(normalizedPath + FILESYSTEM_ENTRIES.DATABASE, "file")
         ? "database"
         : "dir";
       return {
@@ -87,29 +87,21 @@ export class FilesystemService {
 
 
   // Update
-  async renameFile(path: string, newName: string) {
+  async rename(path: string, newName: string) {
     const parentPath = getParentPath(path);
     const newPath = parentPath == "/" ? `/${newName}` : `${parentPath}/${newName}`;
     if (await this.exists(newPath)) {
-      throw new Error("Já existe um arquivo com esse nome.");
+      throw new Error("Este nome já existe.");
     };
     await this.filesystem.rename(path, newPath);
   }
 
-  async renameDir(oldPath: string, newPath: string) {
-    if (oldPath === newPath) return;
-    const oldStat = await $filesystem.stat(oldPath);
-    if (oldStat.type !== "dir") return;
-    if (await exists(newPath)) return;
-    await $filesystem.rename(oldPath, newPath);
-    root.value.children = await readDir("/", true);
-  }
   async moveEntry(entryPath: string, dirPath: string) {
-    const entry = await getEntry(entryPath);
+    const entry = await this.getEntry(entryPath);
     if (entry.type === "file") {
-      await renameFile(entryPath, normalizePath(`${dirPath}/${entry.name}`));
+      await this.rename(entryPath, normalizePath(`${dirPath}/${entry.name}`));
     } else if (entry.type === "dir") {
-      await renameDir(entryPath, normalizePath(`${dirPath}/${entry.name}`));
+      await this.rename(entryPath, normalizePath(`${dirPath}/${entry.name}`));
     }
   }
 
@@ -124,17 +116,14 @@ export class FilesystemService {
   async deleteFile(path: string) {
     await this.filesystem.unlink(path);
   }
-  async deleteDir(path: string, recursive = false, refresh = true) {
+  async deleteDir(path: string, recursive = false) {
     if (recursive) {
-      const entries = await readDir(path);
+      const entries = await this.readDir(path);
       for (const entry of entries) {
-        if (entry.type === "dir") await deleteDir(entry.path, true, false);
-        else if (entry.type === "file") await deleteFile(entry.path, false);
+        if (['page', 'database', 'dir'].includes(entry.type)) await this.deleteDir(entry.path, true);
+        else if (['settings', 'properties', 'file'].includes(entry.type)) await this.deleteFile(entry.path);
       }
     }
-    await $filesystem.rmdir(path);
-    if (refresh) {
-      root.value.children = await readDir("/", true)
-    }
+    await this.filesystem.rmdir(path);
   }
 }

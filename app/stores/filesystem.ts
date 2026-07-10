@@ -33,12 +33,9 @@ export const useFilesystemStore = defineStore("filesystem", () => {
     await refresh();
   }
 
-  async function renameFile(path: string, newName: string) {
-    await $filesystem.renameFile(path, newName);
+  async function rename(path: string, newName: string) {
+    await $filesystem.rename(path, newName);
     await refresh();
-  }
-  async function renameDir(path: string, newName: string) {
-    await $filesystem.renameDir(path, newName);
   }
 
   async function moveEntry(entryPath: string, dirPath: string) {
@@ -49,8 +46,9 @@ export const useFilesystemStore = defineStore("filesystem", () => {
     await $filesystem.deleteFile(path);
     await refresh();
   }
-  async function deleteDir(path: string, recursive = false, refresh = true) {
-    await $filesystem.deleteDir(path, recursive, refresh);
+  async function deleteDir(path: string, recursive = false) {
+    await $filesystem.deleteDir(path, recursive);
+    await refresh();
   }
 
   async function refresh() {
@@ -160,6 +158,7 @@ export const useFilesystemStore = defineStore("filesystem", () => {
 
     loadRoot,
     startRouteSync,
+    refresh,
 
     createFile,
     createDir,
@@ -168,8 +167,7 @@ export const useFilesystemStore = defineStore("filesystem", () => {
     readFile,
     readDir,
 
-    renameFile,
-    renameDir,
+    rename,
     moveEntry,
     updateFileContent,
 

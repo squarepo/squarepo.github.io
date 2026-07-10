@@ -35,12 +35,12 @@ watch(
           </li>
           <div class="ps-2"></div>
         </ol>
-        <div class="form-check">
-          <input v-model="filesystemStore.raw" class="form-check-input" type="checkbox" id="rawCheck">
-          <label class="form-check-label" for="rawCheck">
-            Raw
-          </label>
-        </div>
+      </div>
+      <div class="form-check me-2">
+        <input v-model="filesystemStore.raw" class="form-check-input" type="checkbox" id="rawCheck">
+        <label class="form-check-label" for="rawCheck">
+          Raw
+        </label>
       </div>
     </div>
   </nav>

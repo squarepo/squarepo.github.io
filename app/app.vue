@@ -49,7 +49,7 @@
         <FilePropertiesView v-else-if="filesystemStore.currentEntry.type === 'properties'" :properties="filesystemStore.currentEntry"></FilePropertiesView>
 
         <template v-else-if="filesystemStore.currentEntry.type === 'page'">
-          <FileView v-if="settingsStore.rootSettings.view == 'App'" :file="filesystemStore.currentEntry.mainFile!"></FileView>
+          <DirPageView v-if="settingsStore.rootSettings.view == 'App'" :entry="filesystemStore.currentEntry"></DirPageView>
           <DirView v-else></DirView>
         </template>
   
