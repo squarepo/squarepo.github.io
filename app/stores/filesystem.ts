@@ -107,7 +107,7 @@ export const useFilesystemStore = defineStore("filesystem", () => {
     const file = await getEntry(path) as File;
     if (file.content === content) return;
     await $filesystem.writeFile(path, content);
-    root.value.children = await readDir("/", true);
+    await refresh();
   }
 
   async function exists(path: string) {

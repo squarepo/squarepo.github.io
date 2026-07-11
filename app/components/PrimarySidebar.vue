@@ -108,7 +108,7 @@ async function getName(path: string, baseName: string) {
         <i class="bi bi-folder fs-5"></i>
         <span>Nova pasta</span>
       </button>
-      <button type="button" class="btn btn-primary d-flex align-items-center justify-content-center gap-2" @click="createSettings()">
+      <button type="button" class="btn btn-primary d-flex align-items-center justify-content-center p-2 gap-2" @click="createSettings()">
         <i class="bi bi-gear fs-5"></i>
         <!-- <span>Nova pasta</span> -->
       </button>

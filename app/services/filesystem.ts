@@ -79,7 +79,8 @@ export class FilesystemService {
           : type == "database"
           ? FILESYSTEM_ENTRIES.DATABASE
           : "")
-        )})
+        )}),
+        ...(type !== "dir" && await this.exists(normalizedPath + FILESYSTEM_ENTRIES.PROPERTIES) && { propertiesFile: await this.getEntry(normalizedPath + FILESYSTEM_ENTRIES.PROPERTIES)})
       } as Dir;
     }
   }
