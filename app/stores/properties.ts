@@ -6,7 +6,7 @@ import type { Settings } from "~/types/settings";
 
 export const usePropertiesStore = defineStore("properties", () => {
 
-  const filesystemStore = useFilesystemStore();
+  const entryStore = useEntryStore();
   const rootSettings = ref<Settings>(DEFAULT_SETTINGS);
   const rootSettingsPath = `/${FILESYSTEM_ENTRIES.SETTINGS}`;
 
@@ -15,8 +15,8 @@ export const usePropertiesStore = defineStore("properties", () => {
   }
 
   async function refresh() {
-    if (await filesystemStore.exists(rootSettingsPath)) {
-      const fileContent = await filesystemStore.readFile(rootSettingsPath);
+    if (await entryStore.exists(rootSettingsPath)) {
+      const fileContent = await entryStore.readFile(rootSettingsPath);
       rootSettings.value = JSON.parse(fileContent) as Settings;
     } else {
       rootSettings.value = DEFAULT_SETTINGS;

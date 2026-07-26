@@ -2,7 +2,7 @@
   import { FILESYSTEM_ENTRIES } from '~/constants/filesystem';
   import type { Dir } from '~/types/filesystem';
   import type { Property, TextProperty } from '~/types/properties';
-  const filesystemStore = useFilesystemStore();
+  const entryStore = useEntryStore();
 
   const props = defineProps<{ entry: Dir }>();
 
@@ -13,7 +13,7 @@
     // 2 - Verificar se o arquivo está vazio
     // 3 - Adicionar a propriedade
     if (!props.entry.propertiesFile) {
-      await filesystemStore.createFile(`${props.entry.path}/${FILESYSTEM_ENTRIES.PROPERTIES}`, "[]");
+      await entryStore.createFile(`${props.entry.path}/${FILESYSTEM_ENTRIES.PROPERTIES}`, "[]");
     }
     properties.value?.push({ name: "Nome", type: "text", value: "" } as TextProperty);
     await updatePropertiesFile();
@@ -25,7 +25,7 @@
 
   async function updatePropertiesFile() {
     const content = JSON.stringify(properties.value, null, 2);
-    await filesystemStore.updateFileContent(props.entry.propertiesFile?.path!, content);
+    await entryStore.updateFileContent(props.entry.propertiesFile?.path!, content);
   }
 
   onMounted(() => {

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { File } from '~/types/filesystem';
 
-const filesystemStore = useFilesystemStore();
+const entryStore = useEntryStore();
 const settingsStore = useSettingsStore();
 
 const props = defineProps<{ settings: File }>();
@@ -13,7 +13,7 @@ type settingsType = {
 const settingsContent = reactive(JSON.parse(props.settings.content) as settingsType);
 
 async function saveSettings() {
-  await filesystemStore.updateFileContent(props.settings.path, JSON.stringify(settingsContent, null, 2));
+  await entryStore.updateFileContent(props.settings.path, JSON.stringify(settingsContent, null, 2));
   await settingsStore.refresh();
 }
 </script>

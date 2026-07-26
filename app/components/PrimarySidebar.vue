@@ -4,73 +4,73 @@ import { DEFAULT_SETTINGS } from '~/defaults/settings';
 
 
 const { $bootstrap } = useNuxtApp();
-const filesystemStore = useFilesystemStore();
+const entryStore = useEntryStore();
 const settingsStore = useSettingsStore();
 const route = useRoute();
 
 onMounted(() => {
-  const offcanvas = new $bootstrap.Offcanvas(document.getElementById("offcanvas")!);
+  const offcanvas = new $bootstrap.Offcanvas(document.getElementById("primarySidebar")!);
   watch(
     () => route.fullPath,
     async (fullPath) => {
-      const entry = await filesystemStore.getEntry(fullPath);
+      const entry = await entryStore.getEntry(fullPath);
       if (entry.type === "file") {
         offcanvas.hide();
       } else if (entry.type === "dir") {
-        filesystemStore.expandedDirs.add(entry.path);
+        entryStore.expandedDirs.add(entry.path);
       }
     }
   );
 });
 
 async function createPage() {
-  if (filesystemStore.currentEntry) {
-    const path = ["file", "settings", "properties"].includes(filesystemStore.currentEntry?.type) ? getParentPath(filesystemStore.currentEntry?.path) : filesystemStore.currentEntry?.path;
+  if (entryStore.currentEntry) {
+    const path = ["file", "settings", "properties"].includes(entryStore.currentEntry?.type) ? getParentPath(entryStore.currentEntry?.path) : entryStore.currentEntry?.path;
     const name = prompt(`Criar nova página`,  await getName(path, "Página"))?.trim();
     if (name === undefined) return;
     const normalizedPath = normalizePath(`/${path}/${name}`);
-    await filesystemStore.createDir(normalizedPath);
-    await filesystemStore.createFile(`${normalizedPath}/${FILESYSTEM_ENTRIES.PAGE}`, "");
-    await filesystemStore.changeURL(normalizedPath);
+    await entryStore.createDir(normalizedPath);
+    await entryStore.createFile(`${normalizedPath}/${FILESYSTEM_ENTRIES.PAGE}`, "");
+    await entryStore.changeURL(normalizedPath);
   }
 }
 
 async function createSettings() {
-  if (filesystemStore.currentEntry) {
-    const path = ["file", "settings", "properties"].includes(filesystemStore.currentEntry?.type) ? getParentPath(filesystemStore.currentEntry?.path) : filesystemStore.currentEntry?.path;
+  if (entryStore.currentEntry) {
+    const path = ["file", "settings", "properties"].includes(entryStore.currentEntry?.type) ? getParentPath(entryStore.currentEntry?.path) : entryStore.currentEntry?.path;
     const name = prompt(`Criar configurações`,  await getName(path, FILESYSTEM_ENTRIES.SETTINGS))?.trim();
     if (name === undefined) return;
     const normalizedPath = normalizePath(`/${path}/${name}`);
-    await filesystemStore.createFile(normalizedPath, JSON.stringify(DEFAULT_SETTINGS, null, 2));
-    await filesystemStore.changeURL(normalizedPath);
+    await entryStore.createFile(normalizedPath, JSON.stringify(DEFAULT_SETTINGS, null, 2));
+    await entryStore.changeURL(normalizedPath);
   }
 }
 
 async function createFile() {
-  if (filesystemStore.currentEntry) {
-    const path = ["file", "settings", "properties"].includes(filesystemStore.currentEntry?.type) ? getParentPath(filesystemStore.currentEntry?.path) : filesystemStore.currentEntry?.path;
+  if (entryStore.currentEntry) {
+    const path = ["file", "settings", "properties"].includes(entryStore.currentEntry?.type) ? getParentPath(entryStore.currentEntry?.path) : entryStore.currentEntry?.path;
     const name = prompt(`Criar novo arquivo`,  await getName(path, "Arquivo"))?.trim();
     if (name === undefined) return;
     const normalizedPath = normalizePath(`/${path}/${name}`);
-    await filesystemStore.createFile(normalizedPath, "");
-    await filesystemStore.changeURL(normalizedPath);
+    await entryStore.createFile(normalizedPath, "");
+    await entryStore.changeURL(normalizedPath);
   }
 }
 
 async function createDir() {
-  if (filesystemStore.currentEntry) {
-    const path = ["file", "settings", "properties"].includes(filesystemStore.currentEntry?.type) ? getParentPath(filesystemStore.currentEntry.path) : filesystemStore.currentEntry.path;
+  if (entryStore.currentEntry) {
+    const path = ["file", "settings", "properties"].includes(entryStore.currentEntry?.type) ? getParentPath(entryStore.currentEntry.path) : entryStore.currentEntry.path;
     const name = prompt(`Criar nova pasta`, await getName(path, "Pasta"))?.trim();
     if (name === undefined) return;
     const normalizedPath = normalizePath(`/${path}/${name}`);
-    await filesystemStore.createDir(normalizedPath);
+    await entryStore.createDir(normalizedPath);
   }
 }
 
 async function getName(path: string, baseName: string) {
   let name: string = baseName;
   let num = 0;
-  while (await filesystemStore.exists(normalizePath(`/${path}/${name}`))) {
+  while (await entryStore.exists(normalizePath(`/${path}/${name}`))) {
     name = `${baseName} ${++num}`;
   }
   return name;
@@ -79,15 +79,15 @@ async function getName(path: string, baseName: string) {
 </script>
 
 <template>
-  <div class="offcanvas offcanvas-start" tabindex="-1" id="offcanvas" aria-labelledby="offcanvas">
+  <div class="offcanvas offcanvas-start" tabindex="-1" id="primarySidebar">
 
     <div class="offcanvas-header">
-      <h5 class="offcanvas-title" id="offcanvasExampleLabel">Arquivos</h5>
-      <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+      <h5 class="offcanvas-title">Arquivos</h5>
+      <button type="button" class="btn-close" data-bs-dismiss="offcanvas"></button>
     </div>
 
     <div class="offcanvas-body">
-      <DirTree v-if="filesystemStore.root.children.length" :entries="filesystemStore.root.children"></DirTree>
+      <DirTree v-if="entryStore.root.children.length" :entries="entryStore.root.children"></DirTree>
       <div v-else class="text-body-tertiary w-100 h-100 d-flex justify-content-center align-items-center"><span>Nenhum arquivo ou pasta</span></div>
     </div>
     

@@ -3,10 +3,10 @@ import type { Dir } from '~/types/filesystem';
 
 const props = defineProps<{ entry: Dir }>();
 
-const filesystemStore = useFilesystemStore();
+const entryStore = useEntryStore();
 
 watch(props.entry, async () => {
-  props.entry.children = await filesystemStore.readDir(props.entry.path);
+  props.entry.children = await entryStore.readDir(props.entry.path);
   props.entry.children = props.entry.children.filter(e => ['dir', 'page', 'database'].includes(e.type));
 }, { immediate: true });
 </script>

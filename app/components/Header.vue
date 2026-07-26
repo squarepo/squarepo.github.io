@@ -1,13 +1,13 @@
 <script setup lang="ts">
 import type { File, Dir } from '~/types/filesystem';
 
-const filesystemStore = useFilesystemStore();
+const entryStore = useEntryStore();
 const route = useRoute();
 const pathEntries = ref<(File | Dir)[]>([]);
 watch(
   () => route.fullPath,
   async (fullPath) => {
-    pathEntries.value = await filesystemStore.getPathEntries(normalizePath(decodeURIComponent(route.path)));
+    pathEntries.value = await entryStore.getPathEntries(normalizePath(decodeURIComponent(route.path)));
   },
   { immediate: true }
 );
@@ -16,7 +16,7 @@ watch(
 <template>
   <nav class="navbar p-0 bg-body-tertiary">
     <div class="w-100 h-100 d-flex align-items-center">
-      <button type="button" class="btn btn-outline-secondary fs-2 p-1 m-2" data-bs-toggle="offcanvas" data-bs-target="#offcanvas">
+      <button type="button" class="btn btn-outline-secondary fs-2 p-1 m-2" data-bs-toggle="offcanvas" data-bs-target="#primarySidebar">
         <i class="bi bi-list"></i>
       </button>
       <div class="w-100 h-100 px-2 overflow-auto justify-content-between d-flex align-items-center">
@@ -37,7 +37,7 @@ watch(
         </ol>
       </div>
       <div class="form-check me-2">
-        <input v-model="filesystemStore.raw" class="form-check-input" type="checkbox" id="rawCheck">
+        <input v-model="entryStore.raw" class="form-check-input" type="checkbox" id="rawCheck">
         <label class="form-check-label" for="rawCheck">
           Raw
         </label>

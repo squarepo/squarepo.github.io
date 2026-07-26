@@ -3,11 +3,11 @@ import { defineStore } from "pinia";
 import type { File, Dir, Entry } from '~/types/filesystem';
 import { getName, getParentPath, normalizePath } from "~/utils/path";
 
-export const useFilesystemStore = defineStore("filesystem", () => {
+export const useEntryStore = defineStore("entry", () => {
 
   const { $filesystem } = useNuxtApp();
 
-  const currentEntry = ref<Entry | null>(null);
+  const entry = ref<Entry | null>(null);
 
   const raw = ref<boolean>(false);
 
@@ -22,46 +22,64 @@ export const useFilesystemStore = defineStore("filesystem", () => {
 
 
 
-
-
+  // Create
   async function createFile(path: string, content: string) {
     await $filesystem.createFile(path, content);
     await refresh();
   }
+
   async function createDir(path: string) {
     await $filesystem.createDir(path);
     await refresh();
   }
 
+  // Read
+  async function readFile(path: string) {
+    const content = await $filesystem.readFile(path);
+    return content;
+  }
+
+  async function readDir(path: string, recursive = false) {
+    return await $filesystem.readDir(path, recursive);
+  }
+
+  async function getEntry(path: string) {
+    return await $filesystem.getEntry(path);
+  }
+
+  // Update
   async function rename(path: string, newName: string) {
     await $filesystem.rename(path, newName);
     await refresh();
   }
 
-  async function moveEntry(entryPath: string, dirPath: string) {
-    await $filesystem.moveEntry(entryPath, dirPath);
+  async function move(entryPath: string, dirPath: string) {
+    await $filesystem.move(entryPath, dirPath);
   }
 
+  async function writeFile(path: string, content: string) {
+    const file = await getEntry(path) as File;
+    if (file.content === content) return;
+    await $filesystem.writeFile(path, content);
+    await refresh();
+  }
+
+  // Delete
   async function deleteFile(path: string) {
     await $filesystem.deleteFile(path);
     await refresh();
   }
+
   async function deleteDir(path: string, recursive = false) {
     await $filesystem.deleteDir(path, recursive);
     await refresh();
   }
 
+
+  
   async function refresh() {
     root.value.children = await $filesystem.readDir("/", true);
   }
-
-  // open(...)
-  // navigate(...)
-
-  // expand(...)
-  // collapse(...)
-  // toggle(...)
-
   async function loadRoot() {
     const route = useRoute();
     const pathEntries = await getPathEntries(normalizePath(decodeURIComponent(route.path)));
@@ -72,7 +90,6 @@ export const useFilesystemStore = defineStore("filesystem", () => {
       }
     }
   }
-
   function startRouteSync() {
     const route = useRoute();
     watch(
@@ -83,39 +100,9 @@ export const useFilesystemStore = defineStore("filesystem", () => {
       { immediate: true }
     );
   }
-
-
-
-
-
-
-
-
-
-  async function getEntry(path: string) {
-    return await $filesystem.getEntry(path);
-  }
-  async function readFile(path: string) {
-    const content = await $filesystem.readFile(path);
-    return content;
-  }
-  async function readDir(path: string, recursive = false) {
-    return await $filesystem.readDir(path, recursive);
-  }
-
-  async function updateFileContent(path: string, content: string) {
-    const file = await getEntry(path) as File;
-    if (file.content === content) return;
-    await $filesystem.writeFile(path, content);
-    await refresh();
-  }
-
   async function exists(path: string) {
     return await $filesystem.exists(path);
   }
-
-
-
   async function getPathEntries(path: string) {
     const entries: (File | Dir)[] = [];
     if (path === "/") return [await getEntry("/")];
@@ -136,9 +123,9 @@ export const useFilesystemStore = defineStore("filesystem", () => {
   async function changeCurrentEntry(path: string) {
     path = decodeURIComponent(path);
     try {
-      currentEntry.value = await getEntry(path);
+      entry.value = await getEntry(path);
     } catch {
-      currentEntry.value = null;
+      entry.value = null;
     }
   }
   async function changeURL(path: string, method: "push" | "replace" = "push") {
@@ -151,7 +138,7 @@ export const useFilesystemStore = defineStore("filesystem", () => {
   }
 
   return {
-    currentEntry,
+    currentEntry: entry,
     expandedDirs,
     raw,
     root,
@@ -168,8 +155,8 @@ export const useFilesystemStore = defineStore("filesystem", () => {
     readDir,
 
     rename,
-    moveEntry,
-    updateFileContent,
+    moveEntry: move,
+    updateFileContent: writeFile,
 
     deleteFile,
     deleteDir,

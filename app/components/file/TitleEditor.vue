@@ -1,16 +1,16 @@
 <script setup lang="ts">
   import type { Entry } from '~/types/filesystem';
-  const filesystemStore = useFilesystemStore();
+  const entryStore = useEntryStore();
 
   const props = defineProps<{ entry: Entry }>();
 
   async function changeName(newName: string) {
     newName = newName.trim();
-    await filesystemStore.rename(props.entry.path, newName);
+    await entryStore.rename(props.entry.path, newName);
 
     const parentPath = getParentPath(props.entry.path);
     const newPath = parentPath == "/" ? `/${newName}` : `${parentPath}/${newName}`;
-    await filesystemStore.changeURL(newPath, 'replace');
+    await entryStore.changeURL(newPath, 'replace');
   }
   
   function revertName(textAreaValue: string) {

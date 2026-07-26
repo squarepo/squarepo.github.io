@@ -2,9 +2,9 @@ export default defineNuxtPlugin({
   name: "init-filesystem",
   dependsOn: ["filesystem"],
   async setup() {
-    const filesystemStore = useFilesystemStore();
-    filesystemStore.loadRoot();
-    filesystemStore.startRouteSync();
+    const entryStore = useEntryStore();
+    entryStore.loadRoot();
+    entryStore.startRouteSync();
 
     const settingsStore = useSettingsStore();
     settingsStore.loadRootSettings();

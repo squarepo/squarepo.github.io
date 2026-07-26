@@ -7,7 +7,6 @@ export class FilesystemService {
   
   constructor(private filesystem: LightningFS.PromisifiedFS) {}
 
-  // Information
   async exists(path: string, type?: "file" | "dir") {
     try {
       const stat = await this.filesystem.stat(path);
@@ -15,10 +14,6 @@ export class FilesystemService {
     } catch {
       return false;
     }
-  }
-
-  async readFile(path: string) {
-    return this.filesystem.readFile(path, "utf8");
   }
 
   // Create
@@ -33,6 +28,10 @@ export class FilesystemService {
   }
 
   // Read
+  async readFile(path: string) {
+    return this.filesystem.readFile(path, "utf8");
+  }
+
   async readDir(path: string, recursive: boolean = false) {
     const entryNames = await this.filesystem.readdir(path);
     entryNames.sort((a, b) => a.localeCompare(b));
@@ -85,9 +84,11 @@ export class FilesystemService {
     }
   }
 
-
-
   // Update
+  async writeFile(path: string, content: string) {
+    return this.filesystem.writeFile(path, content);
+  }
+
   async rename(path: string, newName: string) {
     const parentPath = getParentPath(path);
     const newPath = parentPath == "/" ? `/${newName}` : `${parentPath}/${newName}`;
@@ -97,7 +98,7 @@ export class FilesystemService {
     await this.filesystem.rename(path, newPath);
   }
 
-  async moveEntry(entryPath: string, dirPath: string) {
+  async move(entryPath: string, dirPath: string) {
     const entry = await this.getEntry(entryPath);
     if (entry.type === "file") {
       await this.rename(entryPath, normalizePath(`${dirPath}/${entry.name}`));
@@ -106,17 +107,11 @@ export class FilesystemService {
     }
   }
 
-  async writeFile(path: string, content: string) {
-    return this.filesystem.writeFile(path, content);
-  }
-
-
-
-
   // Delete
   async deleteFile(path: string) {
     await this.filesystem.unlink(path);
   }
+
   async deleteDir(path: string, recursive = false) {
     if (recursive) {
       const entries = await this.readDir(path);

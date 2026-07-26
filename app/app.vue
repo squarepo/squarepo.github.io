@@ -1,10 +1,10 @@
 <script setup lang="ts">
   import { FILESYSTEM_ENTRIES } from './constants/filesystem';
   import type { File } from './types/filesystem';
-  const filesystemStore = useFilesystemStore();
+  const entryStore = useEntryStore();
   const settingsStore = useSettingsStore();
   useHead({
-    title: () => filesystemStore.currentEntry && filesystemStore.currentEntry.path !== "/" ? filesystemStore.currentEntry.name : "Squarepo"
+    title: () => entryStore.currentEntry && entryStore.currentEntry.path !== "/" ? entryStore.currentEntry.name : "Squarepo"
   });
 </script>
 
@@ -15,26 +15,26 @@
 
     <Navigation></Navigation>
 
-    <template v-if="filesystemStore.currentEntry">
+    <template v-if="entryStore.currentEntry">
 
-      <template v-if="filesystemStore.raw">
+      <template v-if="entryStore.raw">
         <div
           v-if="
-            filesystemStore.currentEntry.type === 'file' ||
-            filesystemStore.currentEntry.type === 'settings' ||
-            filesystemStore.currentEntry.type === 'properties'
+            entryStore.currentEntry.type === 'file' ||
+            entryStore.currentEntry.type === 'settings' ||
+            entryStore.currentEntry.type === 'properties'
           "
           class="w-100 h-100 overflow-auto d-flex flex-column"
         >
           <div class="container p-0 my-3 w-100 h-100 d-flex flex-column">
-            <FileView :file="filesystemStore.currentEntry"></FileView>
+            <FileView :file="entryStore.currentEntry"></FileView>
           </div>
         </div>
         <div
           v-else-if="
-            filesystemStore.currentEntry.type === 'dir' ||
-            filesystemStore.currentEntry.type === 'page' ||
-            filesystemStore.currentEntry.type === 'database'
+            entryStore.currentEntry.type === 'dir' ||
+            entryStore.currentEntry.type === 'page' ||
+            entryStore.currentEntry.type === 'database'
           "
           class="w-100 h-100 overflow-auto d-flex flex-column"
         >
@@ -46,22 +46,22 @@
 
       <template v-else>
 
-        <template v-if="['file', 'settings', 'properties'].includes(filesystemStore.currentEntry.type)">
+        <template v-if="['file', 'settings', 'properties'].includes(entryStore.currentEntry.type)">
           <template v-if="settingsStore.rootSettings.view == 'App'">
-            <FileSettingsView v-if="filesystemStore.currentEntry.type === 'settings'" :settings="filesystemStore.currentEntry"></FileSettingsView>
-            <FileView v-else-if="filesystemStore.currentEntry.type === 'properties'" :file="filesystemStore.currentEntry"></FileView>
+            <FileSettingsView v-if="entryStore.currentEntry.type === 'settings'" :settings="entryStore.currentEntry"></FileSettingsView>
+            <FileView v-else-if="entryStore.currentEntry.type === 'properties'" :file="entryStore.currentEntry"></FileView>
           </template>
           <div v-else class="w-100 h-100 overflow-auto d-flex flex-column">
             <div class="container p-0 my-3 w-100 h-100 d-flex flex-column">
-              <FileView :file="filesystemStore.currentEntry"></FileView>
+              <FileView :file="entryStore.currentEntry"></FileView>
             </div>
           </div>
         </template>
         
-        <template v-else-if="['dir', 'page', 'database'].includes(filesystemStore.currentEntry.type)">
+        <template v-else-if="['dir', 'page', 'database'].includes(entryStore.currentEntry.type)">
           <template v-if="settingsStore.rootSettings.view == 'App'">
-            <DirPageView v-if="filesystemStore.currentEntry.type == 'page'" :entry="filesystemStore.currentEntry"></DirPageView>
-            <DirDatabaseView v-else-if="filesystemStore.currentEntry.type == 'database'" :entry="filesystemStore.currentEntry"></DirDatabaseView>
+            <DirPageView v-if="entryStore.currentEntry.type == 'page'" :entry="entryStore.currentEntry"></DirPageView>
+            <DirDatabaseView v-else-if="entryStore.currentEntry.type == 'database'" :entry="entryStore.currentEntry"></DirDatabaseView>
           </template>
           <div v-else class="w-100 h-100 overflow-auto d-flex flex-column">
             <div class="container my-3 w-100 h-100 d-flex flex-column">
