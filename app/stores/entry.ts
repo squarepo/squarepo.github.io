@@ -79,6 +79,7 @@ export const useEntryStore = defineStore("entry", () => {
   
   async function refresh() {
     root.value.children = await $filesystem.readDir("/", true);
+    await changeCurrentEntry(useRoute().fullPath);
   }
   async function loadRoot() {
     const route = useRoute();

@@ -79,7 +79,7 @@
     </template>
 
     <PrimarySidebar></PrimarySidebar>
-    <SecondarySidebar></SecondarySidebar>
+    <SecondarySidebar :entry="entryStore.currentEntry"></SecondarySidebar>
     
   </div>
 </template>

@@ -9,13 +9,10 @@
   const properties = ref<Property[]>([]);
 
   async function addPropertie() {
-    // 1 - Verificar se existe o arquivo properties.json
-    // 2 - Verificar se o arquivo está vazio
-    // 3 - Adicionar a propriedade
     if (!props.entry.propertiesFile) {
-      await entryStore.createFile(`${props.entry.path}/${FILESYSTEM_ENTRIES.PROPERTIES}`, "[]");
+      await entryStore.createFile(`${props.entry.path}/${FILESYSTEM_ENTRIES.PROPERTIES}`, "");
     }
-    properties.value?.push({ name: "Nome", type: "text", value: "" } as TextProperty);
+    properties.value.push({ name: "Nome", type: "text", value: "" } as TextProperty);
     await updatePropertiesFile();
   }
 

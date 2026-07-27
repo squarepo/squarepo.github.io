@@ -10,17 +10,17 @@ const route = useRoute();
 
 onMounted(() => {
   const offcanvas = new $bootstrap.Offcanvas(document.getElementById("primarySidebar")!);
-  watch(
-    () => route.fullPath,
-    async (fullPath) => {
-      const entry = await entryStore.getEntry(fullPath);
-      if (entry.type === "file") {
-        offcanvas.hide();
-      } else if (entry.type === "dir") {
-        entryStore.expandedDirs.add(entry.path);
-      }
-    }
-  );
+  // watch(
+  //   () => route.fullPath,
+  //   async (fullPath) => {
+  //     const entry = await entryStore.getEntry(fullPath);
+  //     if (entry.type === "file") {
+  //       offcanvas.hide();
+  //     } else if (entry.type === "dir") {
+  //       entryStore.expandedDirs.add(entry.path);
+  //     }
+  //   }
+  // );
 });
 
 async function createPage() {
