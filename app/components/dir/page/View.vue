@@ -6,5 +6,5 @@ const props = defineProps<{ entry: Dir }>();
 <template>
   <FileTitleEditor :entry="entry"></FileTitleEditor>
   <DirPageProperties :entry="entry"></DirPageProperties>
-  <FileTextEditor :file="entry.mainFile"></FileTextEditor>
+  <DirPageEditor :entry="entry.mainFile"></DirPageEditor>
 </template>

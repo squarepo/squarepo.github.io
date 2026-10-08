@@ -11,9 +11,14 @@
     const parentPath = getParentPath(props.entry.path);
     const newPath = parentPath == "/" ? `/${newName}` : `${parentPath}/${newName}`;
     await entryStore.changeURL(newPath, 'replace');
+
+    // if (props.entry && newName !== props.entry.name) {
+    //   const textAreaEl = document.getElementById("title-editor") as HTMLTextAreaElement;
+    //   textAreaEl.value = props.entry.name;
+    // }
   }
   
-  function revertName(textAreaValue: string) {
+  function handleBlur(textAreaValue: string) {
     if (props.entry && textAreaValue !== props.entry.name) {
       const textAreaEl = document.getElementById("title-editor") as HTMLTextAreaElement;
       textAreaEl.value = props.entry.name;
@@ -28,7 +33,6 @@
     style="box-sizing: border-box;"
     placeholder="Título..."
     :value="entry?.name"
-    @input="changeName(($event.target as HTMLTextAreaElement).value)"
-    @blur="revertName(($event.target as HTMLTextAreaElement).value)"
+    @blur="changeName(($event.target as HTMLTextAreaElement).value)"
   >
 </template>

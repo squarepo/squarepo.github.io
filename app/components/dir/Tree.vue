@@ -1,9 +1,120 @@
 <script setup lang="ts">
-import type { File, Dir } from '~/types/filesystem';
+import { FILESYSTEM_ENTRIES } from '~/constants/filesystem';
+import { DEFAULT_SETTINGS } from '~/defaults/settings';
+import type { File, Dir, Entry } from '~/types/filesystem';
+import type { ContextMenuItem } from '~/types/contextMenu';
 
 const props = defineProps<{ entries: (File | Dir)[] }>();
 const entryStore = useEntryStore();
 const settingsStore = useSettingsStore();
+
+const contextMenu = ref<{
+  x: number,
+  y: number,
+  entry: Entry,
+  items: ContextMenuItem[]
+} | null>(null)
+
+function openContextMenu(event: MouseEvent, entry: Entry) {
+  event.preventDefault()
+
+  contextMenu.value = {
+    x: event.clientX,
+    y: event.clientY,
+    entry,
+    items: [
+      {
+        type: 'item',
+        label: "Adicionar página",
+        value: "add-page"
+      },
+      {
+        type: 'item',
+        label: "Adicionar pasta",
+        value: "add-dir"
+      },
+      {
+        type: 'divider'
+      },
+      {
+        type: 'item',
+        label: 'Renomear',
+        value: 'rename',
+      },
+      {
+        type: 'item',
+        label: 'Excluir',
+        value: 'delete'
+      }
+    ]
+  }
+}
+
+function handleContextMenuSelect(item: Extract<ContextMenuItem, { type: "item" }>) {
+  const entry = contextMenu.value?.entry;
+  if (entry) {
+    const basePath = ["file", "settings", "properties"].includes(entry.type) ? getParentPath(entry.path) : entry.path;
+    switch (item.value) {
+      case "add-page": createPage(basePath); break;
+      case "add-settings": createSettings(basePath); break;
+      case "add-file": createFile(basePath); break;
+      case "add-dir": createDir(basePath); break;
+      // divider
+      case "rename": rename(entry.path); break;
+      case "delete":
+        switch (entry.type) {
+          case 'file': 
+          case 'settings': 
+          case 'properties': deleteFile(entry.path); break;
+          case 'dir': 
+          case 'page': 
+          case 'database': deleteDir(entry.path, true); break;
+        }
+        break;
+    }
+  }
+}
+
+async function createPage(path: string) {
+  const name = prompt(`Criar nova página`,  await getName(path, "Página"))?.trim();
+  if (name === undefined) return;
+  const normalizedPath = normalizePath(`/${path}/${name}`);
+  await entryStore.createDir(normalizedPath);
+  await entryStore.createFile(`${normalizedPath}/${FILESYSTEM_ENTRIES.PAGE}`, "");
+  await entryStore.changeURL(normalizedPath);
+}
+
+async function createSettings(path: string) {
+  const name = prompt(`Criar configurações`,  await getName(path, FILESYSTEM_ENTRIES.SETTINGS))?.trim();
+  if (name === undefined) return;
+  const normalizedPath = normalizePath(`/${path}/${name}`);
+  await entryStore.createFile(normalizedPath, JSON.stringify(DEFAULT_SETTINGS, null, 2));
+  await entryStore.changeURL(normalizedPath);
+}
+
+async function createFile(path: string) {
+  const name = prompt(`Criar novo arquivo`,  await getName(path, "Arquivo"))?.trim();
+  if (name === undefined) return;
+  const normalizedPath = normalizePath(`/${path}/${name}`);
+  await entryStore.createFile(normalizedPath, "");
+  await entryStore.changeURL(normalizedPath);
+}
+
+async function createDir(path: string) {
+  const name = prompt(`Criar nova pasta`, await getName(path, "Pasta"))?.trim();
+  if (name === undefined) return;
+  const normalizedPath = normalizePath(`/${path}/${name}`);
+  await entryStore.createDir(normalizedPath);
+}
+
+async function getName(path: string, baseName: string) {
+  let name: string = baseName;
+  let num = 0;
+  while (await entryStore.exists(normalizePath(`/${path}/${name}`))) {
+    name = `${baseName} ${++num}`;
+  }
+  return name;
+}
 
 function toggleDir(path: string) {
   if (entryStore.expandedDirs.has(path)) {
@@ -51,7 +162,9 @@ async function rename(path: string) {
     <template v-for="entry in entries" :key="entry.path">
       <li
         v-if="entry.type !== 'file'"
-        class="list-group-item border-0 rounded p-0 d-flex flex-column align-items-center">
+        class="list-group-item border-0 rounded p-0 d-flex flex-column align-items-center"
+        @contextmenu.stop="openContextMenu($event, entry)"
+      >
   
         <div class="d-flex w-100 align-items-center text-body list-group-item-action rounded">
           <i @click="toggleDir(entry.path)" :class="{ invisible: !['page', 'database', 'dir'].includes(entry.type), 'bi-chevron-right': !entryStore.expandedDirs.has(entry.path), 'bi-chevron-down': entryStore.expandedDirs.has(entry.path) }" class="bi ms-2"></i>
@@ -63,20 +176,28 @@ async function rename(path: string) {
           <NuxtLink :to="entry.path" class="w-100 p-2 text-truncate text-body text-decoration-none">
             {{ entry.name }}
           </NuxtLink>
-          <button type="button" class="btn btn-rename border-0 p-0 me-2" @click="rename(entry.path)"><i class="bi bi-pencil"></i></button>
-          <button type="button" class="btn btn-delete border-0 p-0 me-2" @click="['file', 'settings', 'properties'].includes(entry.type) ? deleteFile(entry.path) : deleteDir(entry.path, true)"><i class="bi bi-trash3"></i></button>
+          <!-- <button type="button" class="btn btn-rename border-0 p-0 me-2" @click="rename(entry.path)"><i class="bi bi-pencil"></i></button>
+          <button v-if="true" type="button" class="btn btn-delete border-0 p-0 me-2" @click="['file', 'settings', 'properties'].includes(entry.type) ? deleteFile(entry.path) : deleteDir(entry.path, true)"><i class="bi bi-trash3"></i></button> -->
         </div>
   
         <DirTree class="ps-4 pt-1" v-if="['page', 'database', 'dir'].includes(entry.type) && entryStore.expandedDirs.has(entry.path) && (entry as Dir).children.filter(e => e.type !== 'file').length" :entries="entry.children"></DirTree>
         <div v-else-if="entryStore.expandedDirs.has(entry.path)" class="text-secondary align-self-start p-2 ms-4">Pasta vazia</div>
-  
       </li>
     </template>
+
+    <ContextMenu
+      v-if="contextMenu"
+      :x="contextMenu.x"
+      :y="contextMenu.y"
+      :items="contextMenu.items"
+      @select="handleContextMenuSelect"
+      @close="contextMenu = null"
+    />
   </ul>
 
   <ul v-else-if="settingsStore.rootSettings.view == 'Filesystem'" class="list-group w-100 list-group-flush gap-1">
     <li
-      v-for="entry in props.entries"
+      v-for="entry in entries"
       :key="entry.path"
       class="list-group-item border-0 rounded p-0 d-flex flex-column align-items-center">
 
