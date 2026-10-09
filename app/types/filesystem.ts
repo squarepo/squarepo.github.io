@@ -6,15 +6,38 @@ export type File = {
   hidden?: boolean,
 };
 
-export type Dir = {
+export type Folder = {
   name: string,
   path: string,
-  type: "dir" | "page" | "database",
+  type: "dir",
   children: Entry[]
   hidden?: boolean,
-  mainFile?: File,
   settingsFile?: File,
-  propertiesFile?: File,
+  propertiesFile?: File
 }
+
+export type Page = {
+  name: string,
+  path: string,
+  type: "page",
+  children: Entry[]
+  hidden?: boolean,
+  mainFile: File,
+  settingsFile?: File,
+  propertiesFile?: File
+}
+
+export type Database = {
+  name: string,
+  path: string,
+  type: "database",
+  children: Entry[]
+  hidden?: boolean,
+  mainFile: File,
+  settingsFile?: File,
+  propertiesFile?: File
+}
+
+export type Dir = Folder | Page | Database;
 
 export type Entry = File | Dir;

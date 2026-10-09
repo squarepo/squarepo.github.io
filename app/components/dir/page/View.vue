@@ -1,10 +1,17 @@
 <script setup lang="ts">
-import type { Dir, File } from '~/types/filesystem';
-const props = defineProps<{ entry: Dir }>();
+import type { Page } from '~/types/filesystem';
+const props = defineProps<{ entry: Page }>();
+const entryStore = useEntryStore();
 </script>
 
 <template>
   <FileTitleEditor :entry="entry"></FileTitleEditor>
-  <DirPageProperties :entry="entry"></DirPageProperties>
-  <DirPageEditor :entry="entry.mainFile"></DirPageEditor>
+  <DirPageMarkdownViewer
+    v-if="entryStore.raw"
+    :file="entry.mainFile"
+  ></DirPageMarkdownViewer>
+  <FileTextEditor
+    v-else
+    :file="entry.mainFile"
+  ></FileTextEditor>
 </template>
