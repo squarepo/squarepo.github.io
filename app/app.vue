@@ -30,7 +30,7 @@
           </div>
         </template>
         
-        <template v-else-if="['dir', 'page', 'database'].includes(entryStore.currentEntry.type)">
+        <template v-else-if="['repository', 'dir', 'page', 'database'].includes(entryStore.currentEntry.type)">
           <template v-if="settingsStore.rootSettings.view == 'App'">
             <DirPageView v-if="entryStore.currentEntry.type == 'page'" :entry="entryStore.currentEntry"></DirPageView>
             <DirDatabaseView v-else-if="entryStore.currentEntry.type == 'database'" :entry="entryStore.currentEntry"></DirDatabaseView>

@@ -38,6 +38,11 @@ export const useEntryStore = defineStore("entry", () => {
     await refresh();
   }
 
+  async function cloneRepository(path: string, url: string) {
+    await $filesystem.cloneRepository(path, url);
+    await refresh();
+  }
+
   // Read
   async function readFile(path: string) {
     const content = await $filesystem.readFile(path);
@@ -156,6 +161,7 @@ export const useEntryStore = defineStore("entry", () => {
     createFile,
     createDir,
     initializeRepository,
+    cloneRepository,
 
     getEntry,
     readFile,

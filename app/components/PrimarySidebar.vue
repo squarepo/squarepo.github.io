@@ -45,6 +45,11 @@ function openContextMenu(event: MouseEvent) {
         value: "add-repository"
       },
       {
+        type: 'item',
+        label: "Clonar repositório",
+        value: "clone-repository"
+      },
+      {
         type: 'divider'
       },
       {
@@ -62,6 +67,7 @@ function handleContextMenuSelect(item: Extract<ContextMenuItem, { type: "item" }
     case "add-page": createPage(rootPath); break;
     case "add-dir": createDir(rootPath); break;
     case "add-repository": createRepository(rootPath); break;
+    case "clone-repository": cloneRepository(rootPath); break;
     case "add-settings": createSettings(rootPath); break;
   }
 }
@@ -72,6 +78,12 @@ async function createRepository(path: string) {
   const normalizedPath = normalizePath(`/${path}/${name}`);
   await entryStore.createDir(normalizedPath);
   await entryStore.initializeRepository(normalizedPath);
+}
+
+async function cloneRepository(path: string) {
+  const url = prompt(`URL do repositório`)?.trim();
+  if (url === undefined) return;
+  await entryStore.cloneRepository(path, url);
 }
 
 async function createPage(path: string) {
@@ -127,7 +139,7 @@ onMounted(() => {
 <template>
   <div class="offcanvas offcanvas-start" tabindex="-1" id="primarySidebar">
 
-    <div class="offcanvas-header pb-0">
+    <div class="offcanvas-header">
       <!-- <h5 class="offcanvas-title">Arquivos</h5> -->
       <select class="form-select me-3">
         <option value="/">Raiz</option>
@@ -142,7 +154,7 @@ onMounted(() => {
     </div>
 
     <div
-      class="offcanvas-body"
+      class="offcanvas-body pt-0"
       @contextmenu="openContextMenu"
     >
       <DirTree v-if="entryStore.root.children.length" :entries="entryStore.root.children"></DirTree>

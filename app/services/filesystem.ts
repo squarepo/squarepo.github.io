@@ -1,5 +1,6 @@
 import LightningFS from "@isomorphic-git/lightning-fs";
 import git from "isomorphic-git";
+import http from "isomorphic-git/http/web";
 import { FILESYSTEM_ENTRIES } from "~/constants/filesystem";
 import type { File, Dir, Entry } from "~/types/filesystem";
 import { getName, getParentPath, normalizePath } from "~/utils/path";
@@ -32,6 +33,16 @@ export class FilesystemService {
     await git.init({
       fs: this.filesystem,
       dir: path
+    });
+  }
+
+  async cloneRepository(path: string, url: string) {
+    await git.clone({
+      fs: this.filesystem,
+      http,
+      dir: path,
+      url,
+      corsProxy: "https://cors.isomorphic-git.org" // just for testing
     });
   }
 

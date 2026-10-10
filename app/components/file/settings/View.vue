@@ -23,6 +23,8 @@ async function saveSettings() {
 
     <h1 class="mb-5">Configurações</h1>
 
+    <h2>Geral</h2>
+
     <div class="d-flex align-items-center">
       <label class="text-end me-3" for="settingsView">View</label>
       <select v-model="settingsContent.view" @change="saveSettings" class="form-select" style="width: fit-content;" id="settingsView">
@@ -30,6 +32,10 @@ async function saveSettings() {
         <option value="Filesystem">Filesystem</option>
       </select>
     </div>
+
+    <hr>
+
+    <h2>Git</h2>
 
   </div>
 </template>
