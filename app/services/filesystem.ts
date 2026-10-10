@@ -1,4 +1,5 @@
 import LightningFS from "@isomorphic-git/lightning-fs";
+import git from "isomorphic-git";
 import { FILESYSTEM_ENTRIES } from "~/constants/filesystem";
 import type { File, Dir, Entry } from "~/types/filesystem";
 import { getName, getParentPath, normalizePath } from "~/utils/path";
@@ -27,6 +28,13 @@ export class FilesystemService {
     await this.filesystem.mkdir(path);
   }
 
+  async initializeRepository(path: string) {
+    await git.init({
+      fs: this.filesystem,
+      dir: path
+    });
+  }
+
   // Read
   async readFile(path: string) {
     return this.filesystem.readFile(path, "utf8");
@@ -38,7 +46,7 @@ export class FilesystemService {
     return await Promise.all(entryNames.map(async (name) => {
       const entry = await this.getEntry(normalizePath(`${path}/${name}`));
       if (recursive) {
-        if (['page', 'database', 'dir'].includes(entry.type)) entry.children = await this.readDir(entry.path, true);
+        if (['repository', 'page', 'database', 'dir'].includes(entry.type)) entry.children = await this.readDir(entry.path, true);
       }
       return entry;
     }));
@@ -62,7 +70,9 @@ export class FilesystemService {
 
     } else { // isDirectory
       const normalizedPath = path === "/" ? "/" : `${path}/`;
-      const type = await this.exists(normalizedPath + FILESYSTEM_ENTRIES.PAGE, "file")
+      const type = await this.exists(normalizedPath + FILESYSTEM_ENTRIES.GIT, "dir")
+        ? "repository"
+        : await this.exists(normalizedPath + FILESYSTEM_ENTRIES.PAGE, "file")
         ? "page"
         : await this.exists(normalizedPath + FILESYSTEM_ENTRIES.DATABASE, "file")
         ? "database"
@@ -72,8 +82,10 @@ export class FilesystemService {
         path,
         children: [],
         type,
-        ...(type !== "dir" && { mainFile: await this.getEntry(normalizedPath +
-          (type == "page"
+        ...(type !== "dir" && { mainEntry: await this.getEntry(normalizedPath +
+          (type == "repository"
+          ? FILESYSTEM_ENTRIES.GIT
+          : type == "page"
           ? FILESYSTEM_ENTRIES.PAGE
           : type == "database"
           ? FILESYSTEM_ENTRIES.DATABASE

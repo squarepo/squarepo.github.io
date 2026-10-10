@@ -8,10 +8,10 @@ const entryStore = useEntryStore();
   <FileTitleEditor :entry="entry"></FileTitleEditor>
   <DirPageMarkdownViewer
     v-if="entryStore.raw"
-    :file="entry.mainFile"
+    :file="entry.mainEntry"
   ></DirPageMarkdownViewer>
   <FileTextEditor
     v-else
-    :file="entry.mainFile"
+    :file="entry.mainEntry"
   ></FileTextEditor>
 </template>

@@ -9,6 +9,10 @@ const entryStore = useEntryStore();
 const settingsStore = useSettingsStore();
 const route = useRoute();
 
+const repositories = computed(() => {
+  return entryStore.root.children.filter(e => e.type == "repository");
+});
+
 const contextMenu = ref<{
   x: number,
   y: number,
@@ -33,6 +37,17 @@ function openContextMenu(event: MouseEvent) {
         value: "add-dir"
       },
       {
+        type: 'divider'
+      },
+      {
+        type: 'item',
+        label: "Adicionar repositório",
+        value: "add-repository"
+      },
+      {
+        type: 'divider'
+      },
+      {
         type: 'item',
         label: "Adicionar configurações",
         value: "add-settings"
@@ -46,8 +61,17 @@ function handleContextMenuSelect(item: Extract<ContextMenuItem, { type: "item" }
   switch (item.value) {
     case "add-page": createPage(rootPath); break;
     case "add-dir": createDir(rootPath); break;
+    case "add-repository": createRepository(rootPath); break;
     case "add-settings": createSettings(rootPath); break;
   }
+}
+
+async function createRepository(path: string) {
+  const name = prompt(`Criar novo repositório`,  await getName(path, "Repositório"))?.trim();
+  if (name === undefined) return;
+  const normalizedPath = normalizePath(`/${path}/${name}`);
+  await entryStore.createDir(normalizedPath);
+  await entryStore.initializeRepository(normalizedPath);
 }
 
 async function createPage(path: string) {
@@ -103,9 +127,18 @@ onMounted(() => {
 <template>
   <div class="offcanvas offcanvas-start" tabindex="-1" id="primarySidebar">
 
-    <div class="offcanvas-header">
-      <h5 class="offcanvas-title">Arquivos</h5>
-      <button type="button" class="btn-close" data-bs-dismiss="offcanvas"></button>
+    <div class="offcanvas-header pb-0">
+      <!-- <h5 class="offcanvas-title">Arquivos</h5> -->
+      <select class="form-select me-3">
+        <option value="/">Raiz</option>
+        <option
+          v-for="repo in repositories"
+          :value="repo.path"
+        >
+          {{ repo.name }}
+        </option>
+      </select>
+      <button type="button" class="btn-close m-0" data-bs-dismiss="offcanvas"></button>
     </div>
 
     <div

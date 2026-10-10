@@ -68,6 +68,7 @@ function handleContextMenuSelect(item: Extract<ContextMenuItem, { type: "item" }
           case 'properties': deleteFile(entry.path); break;
           case 'dir': 
           case 'page': 
+          case 'repository': 
           case 'database': deleteDir(entry.path, true); break;
         }
         break;
@@ -167,11 +168,12 @@ async function rename(path: string) {
       >
   
         <div class="d-flex w-100 align-items-center text-body list-group-item-action rounded">
-          <i @click="toggleDir(entry.path)" :class="{ invisible: !['page', 'database', 'dir'].includes(entry.type), 'bi-chevron-right': !entryStore.expandedDirs.has(entry.path), 'bi-chevron-down': entryStore.expandedDirs.has(entry.path) }" class="bi ms-2"></i>
+          <i @click="toggleDir(entry.path)" :class="{ invisible: !['repository', 'page', 'database', 'dir'].includes(entry.type), 'bi-chevron-right': !entryStore.expandedDirs.has(entry.path), 'bi-chevron-down': entryStore.expandedDirs.has(entry.path) }" class="bi ms-2"></i>
           <i v-if="entry.type === 'settings'" class="bi bi-gear text-secondary-emphasis fs-5 ms-2"></i>
-          <i v-if="entry.type === 'properties'" class="bi bi-puzzle text-secondary-emphasis fs-5 ms-2"></i>
-          <i v-if="entry.type === 'page'" class="bi text-secondary-emphasis fs-5 ms-2" :class="{ 'bi-file-earmark-text': entry.mainFile.content, 'bi-file-earmark': !entry.mainFile.content }"></i>
-          <i v-else-if="entry.type === 'database'" class="bi bi-database text-primary fs-5 ms-2"></i>
+          <i v-else-if="entry.type === 'properties'" class="bi bi-puzzle text-secondary-emphasis fs-5 ms-2"></i>
+          <i v-else-if="entry.type === 'repository'" class="bi bi-archive text-primary fs-5 ms-2"></i>
+          <i v-else-if="entry.type === 'page'" class="bi text-secondary-emphasis fs-5 ms-2" :class="{ 'bi-file-earmark-text': entry.mainEntry.content, 'bi-file-earmark': !entry.mainEntry.content }"></i>
+          <i v-else-if="entry.type === 'database'" class="bi bi-database text-danger fs-5 ms-2"></i>
           <i v-else-if="entry.type === 'dir'" class="bi fs-5 ms-2 text-warning" :class="{ 'bi-folder2-open': entryStore.expandedDirs.has(entry.path), 'bi-folder': !entryStore.expandedDirs.has(entry.path) }"></i>
           <NuxtLink :to="entry.path" class="w-100 p-2 text-truncate text-body text-decoration-none">
             {{ entry.name }}
@@ -180,7 +182,7 @@ async function rename(path: string) {
           <button v-if="true" type="button" class="btn btn-delete border-0 p-0 me-2" @click="['file', 'settings', 'properties'].includes(entry.type) ? deleteFile(entry.path) : deleteDir(entry.path, true)"><i class="bi bi-trash3"></i></button> -->
         </div>
   
-        <DirTree class="ps-4 pt-1" v-if="['page', 'database', 'dir'].includes(entry.type) && entryStore.expandedDirs.has(entry.path) && (entry as Dir).children.filter(e => e.type !== 'file').length" :entries="entry.children"></DirTree>
+        <DirTree class="ps-4 pt-1" v-if="['repository', 'page', 'database', 'dir'].includes(entry.type) && entryStore.expandedDirs.has(entry.path) && (entry as Dir).children.filter(e => e.type !== 'file').length" :entries="entry.children"></DirTree>
         <div v-else-if="entryStore.expandedDirs.has(entry.path)" class="text-secondary align-self-start p-2 ms-4">Pasta vazia</div>
       </li>
     </template>

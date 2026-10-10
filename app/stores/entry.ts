@@ -33,6 +33,11 @@ export const useEntryStore = defineStore("entry", () => {
     await refresh();
   }
 
+  async function initializeRepository(path: string) {
+    await $filesystem.initializeRepository(path);
+    await refresh();
+  }
+
   // Read
   async function readFile(path: string) {
     const content = await $filesystem.readFile(path);
@@ -150,6 +155,7 @@ export const useEntryStore = defineStore("entry", () => {
 
     createFile,
     createDir,
+    initializeRepository,
 
     getEntry,
     readFile,
