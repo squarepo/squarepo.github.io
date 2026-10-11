@@ -1,7 +1,18 @@
+const entryStore = useEntryStore();
+
 export function getName(path: string) {
   if (!path) return "";
   const parts = path.split("/").filter(Boolean);
   return parts.pop() || "/";
+}
+
+export async function getIncrementalName(path: string, baseName: string) {
+  let name: string = baseName;
+  let num = 0;
+  while (await entryStore.exists(normalizePath(`/${path}/${name}`))) {
+    name = `${baseName} ${++num}`;
+  }
+  return name;
 }
 
 export function getParentPath(path: string) {

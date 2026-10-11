@@ -29,12 +29,12 @@ function openContextMenu(event: MouseEvent) {
       {
         type: 'item',
         label: "Adicionar página",
-        value: "add-page"
+        value: "create-page"
       },
       {
         type: 'item',
         label: "Adicionar pasta",
-        value: "add-dir"
+        value: "create-folder"
       },
       {
         type: 'divider'
@@ -42,7 +42,7 @@ function openContextMenu(event: MouseEvent) {
       {
         type: 'item',
         label: "Adicionar repositório",
-        value: "add-repository"
+        value: "create-repository"
       },
       {
         type: 'item',
@@ -55,83 +55,25 @@ function openContextMenu(event: MouseEvent) {
       {
         type: 'item',
         label: "Adicionar configurações",
-        value: "add-settings"
+        value: "create-settings"
       }
     ]
   }
 }
 
-function handleContextMenuSelect(item: Extract<ContextMenuItem, { type: "item" }>) {
+async function handleContextMenuSelect(item: Extract<ContextMenuItem, { type: "item" }>) {
   const rootPath = entryStore.root.path;
   switch (item.value) {
-    case "add-page": createPage(rootPath); break;
-    case "add-dir": createDir(rootPath); break;
-    case "add-repository": createRepository(rootPath); break;
-    case "clone-repository": cloneRepository(rootPath); break;
-    case "add-settings": createSettings(rootPath); break;
+    case "create-page": await entryStore.createPage(rootPath); break;
+    case "create-folder": await entryStore.createFolder(rootPath); break;
+    case "create-repository": await entryStore.createRepository(rootPath); break;
+    case "clone-repository": await entryStore.cloneRepository(rootPath); break;
+    case "create-settings": await entryStore.createSettings(rootPath); break;
   }
-}
-
-async function createRepository(path: string) {
-  const name = prompt(`Criar novo repositório`,  await getName(path, "Repositório"))?.trim();
-  if (name === undefined) return;
-  const normalizedPath = normalizePath(`/${path}/${name}`);
-  await entryStore.createDir(normalizedPath);
-  await entryStore.initializeRepository(normalizedPath);
-}
-
-async function cloneRepository(path: string) {
-  const url = prompt(`URL do repositório`)?.trim();
-  if (url === undefined) return;
-  await entryStore.cloneRepository(path, url);
-}
-
-async function createPage(path: string) {
-  const name = prompt(`Criar nova página`,  await getName(path, "Página"))?.trim();
-  if (name === undefined) return;
-  const normalizedPath = normalizePath(`/${path}/${name}`);
-  await entryStore.createDir(normalizedPath);
-  await entryStore.createFile(`${normalizedPath}/${FILESYSTEM_ENTRIES.PAGE}`, "");
-  await entryStore.changeURL(normalizedPath);
-}
-
-async function createSettings(path: string) {
-  const name = prompt(`Criar configurações`,  await getName(path, FILESYSTEM_ENTRIES.SETTINGS))?.trim();
-  if (name === undefined) return;
-  const normalizedPath = normalizePath(`/${path}/${name}`);
-  await entryStore.createFile(normalizedPath, JSON.stringify(DEFAULT_SETTINGS, null, 2));
-  await entryStore.changeURL(normalizedPath);
-}
-
-async function createDir(path: string) {
-  const name = prompt(`Criar nova pasta`, await getName(path, "Pasta"))?.trim();
-  if (name === undefined) return;
-  const normalizedPath = normalizePath(`/${path}/${name}`);
-  await entryStore.createDir(normalizedPath);
-}
-
-async function getName(path: string, baseName: string) {
-  let name: string = baseName;
-  let num = 0;
-  while (await entryStore.exists(normalizePath(`/${path}/${name}`))) {
-    name = `${baseName} ${++num}`;
-  }
-  return name;
 }
 
 onMounted(() => {
   const offcanvas = new $bootstrap.Offcanvas(document.getElementById("primarySidebar")!);
-  // watch(
-  //   () => route.fullPath,
-  //   async (fullPath) => {
-  //     const entry = await entryStore.getEntry(fullPath);
-  //     if (entry.type === "file") {
-  //       offcanvas.hide();
-  //     } else if (entry.type === "dir") {
-  //       entryStore.expandedDirs.add(entry.path);
-  //     }
-  //   }
-  // );
 });
 
 </script>

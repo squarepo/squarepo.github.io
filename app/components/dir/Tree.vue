@@ -26,12 +26,12 @@ function openContextMenu(event: MouseEvent, entry: Entry) {
       {
         type: 'item',
         label: "Adicionar página",
-        value: "add-page"
+        value: "create-page"
       },
       {
         type: 'item',
         label: "Adicionar pasta",
-        value: "add-dir"
+        value: "create-folder"
       },
       {
         type: 'divider'
@@ -39,7 +39,7 @@ function openContextMenu(event: MouseEvent, entry: Entry) {
       {
         type: 'item',
         label: "Adicionar repositório",
-        value: "add-repository"
+        value: "create-repository"
       },
       {
         type: 'item',
@@ -52,7 +52,7 @@ function openContextMenu(event: MouseEvent, entry: Entry) {
       {
         type: 'item',
         label: "Adicionar configurações",
-        value: "add-settings"
+        value: "create-settings"
       },
       {
         type: 'divider'
@@ -71,87 +71,31 @@ function openContextMenu(event: MouseEvent, entry: Entry) {
   }
 }
 
-function handleContextMenuSelect(item: Extract<ContextMenuItem, { type: "item" }>) {
+async function handleContextMenuSelect(item: Extract<ContextMenuItem, { type: "item" }>) {
   const entry = contextMenu.value?.entry;
   if (entry) {
     const basePath = ["file", "settings", "properties"].includes(entry.type) ? getParentPath(entry.path) : entry.path;
     switch (item.value) {
-      case "add-page": createPage(basePath); break;
-      case "add-dir": createDir(basePath); break;
-      case "add-repository": createRepository(basePath); break;
-      case "clone-repository": cloneRepository(basePath); break;
-      case "add-file": createFile(basePath); break;
-      case "add-settings": createSettings(basePath); break;
+      case "create-page": await entryStore.createPage(basePath); break;
+      case "create-folder": await entryStore.createFolder(basePath); break;
+      case "create-repository": await entryStore.createRepository(basePath); break;
+      case "clone-repository": await entryStore.cloneRepository(basePath); break;
+      case "create-settings": await entryStore.createSettings(basePath); break;
       // divider
-      case "rename": rename(entry.path); break;
+      case "rename": await entryStore.rename(entry.path); break;
       case "delete":
         switch (entry.type) {
           case 'file': 
           case 'settings': 
-          case 'properties': deleteFile(entry.path); break;
+          case 'properties': await entryStore.deleteFile(entry.path); break;
           case 'dir': 
           case 'page': 
           case 'repository': 
-          case 'database': deleteDir(entry.path, true); break;
+          case 'database': await entryStore.deleteDir(entry.path, true); break;
         }
         break;
     }
   }
-}
-
-async function createRepository(path: string) {
-  const name = prompt(`Criar novo repositório`,  await getName(path, "Repositório"))?.trim();
-  if (name === undefined) return;
-  const normalizedPath = normalizePath(`/${path}/${name}`);
-  await entryStore.createDir(normalizedPath);
-  await entryStore.initializeRepository(normalizedPath);
-}
-
-async function cloneRepository(path: string) {
-  const url = prompt(`URL do repositório`)?.trim();
-  if (url === undefined) return;
-  await entryStore.cloneRepository(path, url);
-}
-
-async function createPage(path: string) {
-  const name = prompt(`Criar nova página`,  await getName(path, "Página"))?.trim();
-  if (name === undefined) return;
-  const normalizedPath = normalizePath(`/${path}/${name}`);
-  await entryStore.createDir(normalizedPath);
-  await entryStore.createFile(`${normalizedPath}/${FILESYSTEM_ENTRIES.PAGE}`, "");
-  await entryStore.changeURL(normalizedPath);
-}
-
-async function createSettings(path: string) {
-  const name = prompt(`Criar configurações`,  await getName(path, FILESYSTEM_ENTRIES.SETTINGS))?.trim();
-  if (name === undefined) return;
-  const normalizedPath = normalizePath(`/${path}/${name}`);
-  await entryStore.createFile(normalizedPath, JSON.stringify(DEFAULT_SETTINGS, null, 2));
-  await entryStore.changeURL(normalizedPath);
-}
-
-async function createFile(path: string) {
-  const name = prompt(`Criar novo arquivo`,  await getName(path, "Arquivo"))?.trim();
-  if (name === undefined) return;
-  const normalizedPath = normalizePath(`/${path}/${name}`);
-  await entryStore.createFile(normalizedPath, "");
-  await entryStore.changeURL(normalizedPath);
-}
-
-async function createDir(path: string) {
-  const name = prompt(`Criar nova pasta`, await getName(path, "Pasta"))?.trim();
-  if (name === undefined) return;
-  const normalizedPath = normalizePath(`/${path}/${name}`);
-  await entryStore.createDir(normalizedPath);
-}
-
-async function getName(path: string, baseName: string) {
-  let name: string = baseName;
-  let num = 0;
-  while (await entryStore.exists(normalizePath(`/${path}/${name}`))) {
-    name = `${baseName} ${++num}`;
-  }
-  return name;
 }
 
 function toggleDir(path: string) {
@@ -159,38 +103,6 @@ function toggleDir(path: string) {
     entryStore.expandedDirs.delete(path);
   } else {
     entryStore.expandedDirs.add(path);
-  }
-}
-
-async function deleteFile(path: string) {
-  const entry = await entryStore.getEntry(path);
-  if (confirm(`${entry.type === "file" ? "O arquivo" : "A pasta"} "${entry.name}" será excluíd${entry.type === "file" ? "o" : "a"}`)) {
-    await entryStore.deleteFile(path);
-    if (!(entryStore.currentEntry && await entryStore.exists(entryStore.currentEntry.path))) {
-      await entryStore.changeURL("/");
-    }
-    if (path == settingsStore.rootSettingsPath) await settingsStore.refresh();
-  }
-}
-
-async function deleteDir(path: string, recursive: boolean) {
-  const entry = await entryStore.getEntry(path);
-  if (confirm(`${entry.type === "file" ? "O arquivo" : "A pasta"} "${entry.name}" será excluíd${entry.type === "file" ? "o" : "a"}`)) {
-    await entryStore.deleteDir(path, recursive);
-    if (!(entryStore.currentEntry && await entryStore.exists(entryStore.currentEntry.path))) {
-      await entryStore.changeURL("/");
-    }
-  }
-}
-
-async function rename(path: string) {
-  const entry = await entryStore.getEntry(path);
-  const newName = prompt(`Renomear`, entry.name)?.trim();
-  if (newName === undefined) return;
-  await entryStore.rename(path, newName);
-  if (path === entryStore.currentEntry?.path) {
-    const newPath = normalizePath(`/${getParentPath(path)}/${newName}`);
-    await entryStore.changeURL(newPath);
   }
 }
 </script>

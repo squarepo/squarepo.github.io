@@ -1,7 +1,9 @@
 import LightningFS from '@isomorphic-git/lightning-fs';
 import { defineStore } from "pinia";
+import { FILESYSTEM_ENTRIES } from '~/constants/filesystem';
+import { DEFAULT_SETTINGS } from '~/defaults/settings';
 import type { File, Dir, Entry } from '~/types/filesystem';
-import { getName, getParentPath, normalizePath } from "~/utils/path";
+import { getIncrementalName, getParentPath, normalizePath } from "~/utils/path";
 
 export const useEntryStore = defineStore("entry", () => {
 
@@ -36,8 +38,19 @@ export const useEntryStore = defineStore("entry", () => {
     await refresh();
   }
 
-  async function cloneRepository(path: string, url: string) {
+  async function cloneRepository(path: string) {
+    const url = prompt(`URL do repositório`)?.trim();
+    if (url === undefined) return;
     await $filesystem.cloneRepository(path, url);
+    await refresh();
+  }
+
+  async function createRepository(path: string) {
+    const name = prompt(`Criar repositório`,  await getIncrementalName(path, "Repositório"))?.trim();
+    if (name === undefined) return;
+    const normalizedPath = normalizePath(`/${path}/${name}`);
+    await $filesystem.createDir(normalizedPath);
+    await $filesystem.initializeRepository(normalizedPath);
     await refresh();
   }
 
@@ -47,9 +60,31 @@ export const useEntryStore = defineStore("entry", () => {
     await refresh();
   }
 
-  async function createDir(path: string) {
-    await $filesystem.createDir(path);
+  async function createSettings(path: string) {
+    const name = prompt(`Criar configurações`, await getIncrementalName(path, FILESYSTEM_ENTRIES.SETTINGS))?.trim();
+    if (name === undefined) return;
+    const normalizedPath = normalizePath(`/${path}/${name}`);
+    await $filesystem.createFile(normalizedPath, JSON.stringify(DEFAULT_SETTINGS, null, 2));
     await refresh();
+    await changeURL(normalizedPath);
+  }
+
+  async function createFolder(path: string) {
+    const name = prompt(`Criar pasta`, await getIncrementalName(path, "Pasta"))?.trim();
+    if (name === undefined) return;
+    const normalizedPath = normalizePath(`/${path}/${name}`);
+    await $filesystem.createDir(normalizedPath);
+    await refresh();
+  }
+
+  async function createPage(path: string) {
+    const name = prompt(`Criar página`, await getIncrementalName(path, "Página"))?.trim();
+    if (name === undefined) return;
+    const normalizedPath = normalizePath(`/${path}/${name}`);
+    await $filesystem.createDir(normalizedPath);
+    await $filesystem.createFile(`${normalizedPath}/${FILESYSTEM_ENTRIES.PAGE}`, "");
+    await refresh();
+    await changeURL(normalizedPath);
   }
 
   // Read
@@ -67,9 +102,16 @@ export const useEntryStore = defineStore("entry", () => {
   }
 
   // Update
-  async function rename(path: string, newName: string) {
+  async function rename(path: string) {
+    const entry = await getEntry(path);
+    const newName = prompt(`Renomear`, entry.name)?.trim();
+    if (newName === undefined) return;
     await $filesystem.rename(path, newName);
     await refresh();
+    if (path === currentEntry.value?.path) {
+      const newPath = normalizePath(`/${getParentPath(path)}/${newName}`);
+      await changeURL(newPath);
+    }
   }
 
   async function move(entryPath: string, dirPath: string) {
@@ -85,13 +127,26 @@ export const useEntryStore = defineStore("entry", () => {
 
   // Delete
   async function deleteFile(path: string) {
-    await $filesystem.deleteFile(path);
-    await refresh();
+    const entry = await getEntry(path);
+    if (confirm(`${entry.type === "file" ? "O arquivo" : "A pasta"} "${entry.name}" será excluíd${entry.type === "file" ? "o" : "a"}`)) {
+      await $filesystem.deleteFile(path);
+      await refresh();
+      if (!(currentEntry.value && await exists(currentEntry.value.path))) {
+        await changeURL("/");
+      }
+      // if (path == settingsStore.rootSettingsPath) await settingsStore.refresh();
+    }
   }
 
-  async function deleteDir(path: string, recursive = false) {
-    await $filesystem.deleteDir(path, recursive);
-    await refresh();
+  async function deleteDir(path: string, recursive: boolean) {
+    const entry = await getEntry(path);
+    if (confirm(`${entry.type === "file" ? "O arquivo" : "A pasta"} "${entry.name}" será excluíd${entry.type === "file" ? "o" : "a"}`)) {
+      await $filesystem.deleteDir(path, recursive);
+      await refresh();
+      if (!(currentEntry.value && await exists(currentEntry.value.path))) {
+        await changeURL("/");
+      }
+    }
   }
 
 
@@ -173,7 +228,10 @@ export const useEntryStore = defineStore("entry", () => {
     cloneRepository,
 
     createFile,
-    createDir,
+    createPage,
+    createFolder,
+    createSettings,
+    createRepository,
 
     getEntry,
     readFile,
