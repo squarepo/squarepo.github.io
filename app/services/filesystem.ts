@@ -18,15 +18,19 @@ export class FilesystemService {
     }
   }
 
-  // Create
-  async createFile(path: string, content: string) {
-    if (await this.exists(path)) return;
-    await this.filesystem.writeFile(path, content);
+  // Git
+  async listBranches(path: string) {
+    return await git.listBranches({
+      fs: this.filesystem,
+      dir: path
+    });
   }
 
-  async createDir(path: string) {
-    if (await this.exists(path)) return;
-    await this.filesystem.mkdir(path);
+  async getGitLog(path: string) {
+    return await git.log({
+      fs: this.filesystem,
+      dir: path
+    });
   }
 
   async initializeRepository(path: string) {
@@ -44,6 +48,17 @@ export class FilesystemService {
       url,
       corsProxy: "https://cors.isomorphic-git.org" // just for testing
     });
+  }
+
+  // Create
+  async createFile(path: string, content: string) {
+    if (await this.exists(path)) return;
+    await this.filesystem.writeFile(path, content);
+  }
+
+  async createDir(path: string) {
+    if (await this.exists(path)) return;
+    await this.filesystem.mkdir(path);
   }
 
   // Read

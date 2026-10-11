@@ -34,6 +34,7 @@
           <template v-if="settingsStore.rootSettings.view == 'App'">
             <DirPageView v-if="entryStore.currentEntry.type == 'page'" :entry="entryStore.currentEntry"></DirPageView>
             <DirDatabaseView v-else-if="entryStore.currentEntry.type == 'database'" :entry="entryStore.currentEntry"></DirDatabaseView>
+            <DirView v-else-if="entryStore.currentEntry.type == 'dir'":dir="entryStore.currentEntry"></DirView>
           </template>
           <div v-else class="w-100 h-100 overflow-auto d-flex flex-column">
             <div class="container my-3 w-100 h-100 d-flex flex-column">

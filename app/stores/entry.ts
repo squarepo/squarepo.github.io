@@ -7,7 +7,7 @@ export const useEntryStore = defineStore("entry", () => {
 
   const { $filesystem } = useNuxtApp();
 
-  const entry = ref<Entry | null>(null);
+  const currentEntry = ref<Entry | null>(null);
 
   const raw = ref<boolean>(false);
 
@@ -22,15 +22,13 @@ export const useEntryStore = defineStore("entry", () => {
 
 
 
-  // Create
-  async function createFile(path: string, content: string) {
-    await $filesystem.createFile(path, content);
-    await refresh();
+  // Git
+  async function listBranches(path: string) {
+    return await $filesystem.listBranches(path);
   }
 
-  async function createDir(path: string) {
-    await $filesystem.createDir(path);
-    await refresh();
+  async function getGitLog(path: string) {
+    return await $filesystem.getGitLog(path);
   }
 
   async function initializeRepository(path: string) {
@@ -40,6 +38,17 @@ export const useEntryStore = defineStore("entry", () => {
 
   async function cloneRepository(path: string, url: string) {
     await $filesystem.cloneRepository(path, url);
+    await refresh();
+  }
+
+  // Create
+  async function createFile(path: string, content: string) {
+    await $filesystem.createFile(path, content);
+    await refresh();
+  }
+
+  async function createDir(path: string) {
+    await $filesystem.createDir(path);
     await refresh();
   }
 
@@ -53,7 +62,7 @@ export const useEntryStore = defineStore("entry", () => {
     return await $filesystem.readDir(path, recursive);
   }
 
-  async function getEntry(path: string) {
+  async function getEntry<T = Entry>(path: string): Promise<T> {
     return await $filesystem.getEntry(path);
   }
 
@@ -134,9 +143,9 @@ export const useEntryStore = defineStore("entry", () => {
   async function changeCurrentEntry(path: string) {
     path = decodeURIComponent(path);
     try {
-      entry.value = await getEntry(path);
+      currentEntry.value = await getEntry(path);
     } catch {
-      entry.value = null;
+      currentEntry.value = null;
     }
   }
   async function changeURL(path: string, method: "push" | "replace" = "push") {
@@ -149,7 +158,7 @@ export const useEntryStore = defineStore("entry", () => {
   }
 
   return {
-    currentEntry: entry,
+    currentEntry,
     expandedDirs,
     raw,
     root,
@@ -158,10 +167,13 @@ export const useEntryStore = defineStore("entry", () => {
     startRouteSync,
     refresh,
 
-    createFile,
-    createDir,
+    listBranches,
+    getGitLog,
     initializeRepository,
     cloneRepository,
+
+    createFile,
+    createDir,
 
     getEntry,
     readFile,
