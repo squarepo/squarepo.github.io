@@ -16,6 +16,14 @@ const filteredEntries = computed(() => {
   }
 });
 
+function filteredChildren(entry: Dir) {
+  if (settingsStore.rootSettings.view == 'App') {
+    return entry.children.filter(e => e.type !== 'file');
+  } else {
+    return entry.children;
+  }
+}
+
 const contextMenu = ref<{
   x: number,
   y: number,
@@ -155,9 +163,11 @@ function toggleDir(path: string) {
         </div>
   
         <ItemTree
-          v-if="['repository', 'page', 'database', 'dir'].includes(entry.type) && entryStore.expandedDirs.has(entry.path) && (entry as Dir).children.filter(e => e.type !== 'file').length"
+          v-if="['repository', 'page', 'database', 'dir'].includes(entry.type)
+            && entryStore.expandedDirs.has(entry.path)
+            && filteredChildren(entry as Dir).length"
           class="ps-4 pt-1"
-          :entries="entry.children"
+          :entries="(entry as Dir).children"
         ></ItemTree>
         <div
           v-else-if="entryStore.expandedDirs.has(entry.path)"
