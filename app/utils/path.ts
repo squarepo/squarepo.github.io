@@ -1,5 +1,3 @@
-const entryStore = useEntryStore();
-
 export function getName(path: string) {
   if (!path) return "";
   const parts = path.split("/").filter(Boolean);
@@ -7,6 +5,7 @@ export function getName(path: string) {
 }
 
 export async function getIncrementalName(path: string, baseName: string) {
+  const entryStore = useEntryStore();
   let name: string = baseName;
   let num = 0;
   while (await entryStore.exists(normalizePath(`/${path}/${name}`))) {

@@ -102,11 +102,12 @@ export const useEntryStore = defineStore("entry", () => {
   }
 
   // Update
-  async function rename(path: string) {
-    const entry = await getEntry(path);
-    const newName = prompt(`Renomear`, entry.name)?.trim();
-    if (newName === undefined) return;
-    await $filesystem.rename(path, newName);
+  async function rename(path: string, newName?: string) {
+    if (newName === undefined) {
+      const entry = await getEntry(path);
+      newName = prompt(`Renomear`, entry.name)?.trim();
+    }
+    await $filesystem.rename(path, newName!);
     await refresh();
     if (path === currentEntry.value?.path) {
       const newPath = normalizePath(`/${getParentPath(path)}/${newName}`);

@@ -82,7 +82,6 @@ onMounted(() => {
   <div class="offcanvas offcanvas-start" tabindex="-1" id="primarySidebar">
 
     <div class="offcanvas-header">
-      <!-- <h5 class="offcanvas-title">Arquivos</h5> -->
       <select class="form-select me-3">
         <option value="/">Raiz</option>
         <option
@@ -99,8 +98,10 @@ onMounted(() => {
       class="offcanvas-body pt-0"
       @contextmenu="openContextMenu"
     >
-      <DirTree v-if="entryStore.root.children.length" :entries="entryStore.root.children"></DirTree>
-      <div v-else class="text-body-tertiary w-100 h-100 d-flex justify-content-center align-items-center"><span>Nenhum arquivo ou pasta</span></div>
+      <ItemTree v-if="entryStore.root.children.length" :entries="entryStore.root.children"></ItemTree>
+      <div v-else class="text-body-tertiary w-100 h-100 d-flex justify-content-center align-items-center">
+        <span>Nenhum arquivo ou pasta</span>
+      </div>
 
       <ContextMenu
         v-if="contextMenu"
