@@ -1,16 +1,23 @@
 <script setup lang="ts">
-import { FILESYSTEM_ENTRIES } from '~/constants/filesystem';
-import { DEFAULT_SETTINGS } from '~/defaults/settings';
 import type { ContextMenuItem } from '~/types/contextMenu';
-
 
 const { $bootstrap } = useNuxtApp();
 const entryStore = useEntryStore();
-const settingsStore = useSettingsStore();
-const route = useRoute();
 
 const repositories = computed(() => {
-  return entryStore.root.children.filter(e => e.type == "repository");
+  let groupsAndRepos = entryStore.root.children.filter(e => {
+    return e.type == "repository"
+      || (e.type == "dir" && e.children.find(e => e.type == "repository"));
+  });
+  groupsAndRepos = groupsAndRepos.map(e => {
+    if (e.type == "dir") {
+      const filteredChildren = e.children.filter(e => e.type == "repository");
+      return { ...e, children: filteredChildren };
+    } else {
+      return e;
+    }
+  });
+  return groupsAndRepos;
 });
 
 const contextMenu = ref<{
@@ -20,20 +27,18 @@ const contextMenu = ref<{
 } | null>(null);
 
 function openContextMenu(event: MouseEvent) {
-  event.preventDefault()
-
   contextMenu.value = {
     x: event.clientX,
     y: event.clientY,
     items: [
       {
         type: 'item',
-        label: "Adicionar página",
+        label: "Criar página",
         value: "create-page"
       },
       {
         type: 'item',
-        label: "Adicionar pasta",
+        label: "Criar pasta",
         value: "create-folder"
       },
       {
@@ -41,7 +46,7 @@ function openContextMenu(event: MouseEvent) {
       },
       {
         type: 'item',
-        label: "Adicionar repositório",
+        label: "Criar repositório",
         value: "create-repository"
       },
       {
@@ -54,7 +59,7 @@ function openContextMenu(event: MouseEvent) {
       },
       {
         type: 'item',
-        label: "Adicionar configurações",
+        label: "Criar configurações",
         value: "create-settings"
       }
     ]
@@ -85,21 +90,35 @@ onMounted(() => {
       <select class="form-select me-3">
         <option value="/">Raiz</option>
         <option
-          v-for="repo in repositories"
+          v-for="repo in repositories.filter(e => e.type == 'repository')"
           :value="repo.path"
+          :key="repo.path"
         >
           {{ repo.name }}
         </option>
+        <optgroup
+          v-for="group in repositories.filter(e => e.type == 'dir')"
+          :label="group.name"
+          :key="group.path"
+        >
+          <option
+            v-for="repo in group.children"
+            :value="repo.path"
+            :key="repo.path"
+          >
+            {{ repo.name }}
+          </option>
+        </optgroup>
       </select>
       <button type="button" class="btn-close m-0" data-bs-dismiss="offcanvas"></button>
     </div>
 
     <div
       class="offcanvas-body pt-0"
-      @contextmenu="openContextMenu"
+      @contextmenu.prevent.stop="openContextMenu"
     >
       <ItemTree v-if="entryStore.root.children.length" :entries="entryStore.root.children"></ItemTree>
-      <div v-else class="text-body-tertiary w-100 h-100 d-flex justify-content-center align-items-center">
+      <div v-else class="text-body-tertiary w-100 h-100 d-flex justify-content-center align-items-center user-select-none">
         <span>Nenhum arquivo ou pasta</span>
       </div>
 

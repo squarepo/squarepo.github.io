@@ -39,12 +39,12 @@ function openContextMenu(event: MouseEvent, entry: Entry) {
     items: [
       {
         type: 'item',
-        label: "Adicionar página",
+        label: "Criar página",
         value: "create-page"
       },
       {
         type: 'item',
-        label: "Adicionar pasta",
+        label: "Criar pasta",
         value: "create-folder"
       },
       {
@@ -52,7 +52,7 @@ function openContextMenu(event: MouseEvent, entry: Entry) {
       },
       {
         type: 'item',
-        label: "Adicionar repositório",
+        label: "Criar repositório",
         value: "create-repository"
       },
       {
@@ -65,7 +65,7 @@ function openContextMenu(event: MouseEvent, entry: Entry) {
       },
       {
         type: 'item',
-        label: "Adicionar configurações",
+        label: "Criar configurações",
         value: "create-settings"
       },
       {
@@ -173,7 +173,7 @@ function toggleDir(path: string) {
           v-else-if="entryStore.expandedDirs.has(entry.path)"
           class="text-secondary align-self-start p-2 ms-4"
         >
-          Pasta vazia
+          Diretório vazio
         </div>
       </li>
     </template>

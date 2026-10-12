@@ -7,7 +7,7 @@ import { getIncrementalName, getParentPath, normalizePath } from "~/utils/path";
 
 export const useEntryStore = defineStore("entry", () => {
 
-  const { $filesystem } = useNuxtApp();
+  const { $filesystemService } = useNuxtApp();
 
   const currentEntry = ref<Entry | null>(null);
 
@@ -26,22 +26,22 @@ export const useEntryStore = defineStore("entry", () => {
 
   // Git
   async function listBranches(path: string) {
-    return await $filesystem.listBranches(path);
+    return await $filesystemService.listBranches(path);
   }
 
   async function getGitLog(path: string) {
-    return await $filesystem.getGitLog(path);
+    return await $filesystemService.getGitLog(path);
   }
 
   async function initializeRepository(path: string) {
-    await $filesystem.initializeRepository(path);
+    await $filesystemService.initializeRepository(path);
     await refresh();
   }
 
   async function cloneRepository(path: string) {
     const url = prompt(`URL do repositório`)?.trim();
     if (url === undefined) return;
-    await $filesystem.cloneRepository(path, url);
+    await $filesystemService.cloneRepository(path, url);
     await refresh();
   }
 
@@ -49,14 +49,14 @@ export const useEntryStore = defineStore("entry", () => {
     const name = prompt(`Criar repositório`,  await getIncrementalName(path, "Repositório"))?.trim();
     if (name === undefined) return;
     const normalizedPath = normalizePath(`/${path}/${name}`);
-    await $filesystem.createDir(normalizedPath);
-    await $filesystem.initializeRepository(normalizedPath);
+    await $filesystemService.createDir(normalizedPath);
+    await $filesystemService.initializeRepository(normalizedPath);
     await refresh();
   }
 
   // Create
   async function createFile(path: string, content: string) {
-    await $filesystem.createFile(path, content);
+    await $filesystemService.createFile(path, content);
     await refresh();
   }
 
@@ -64,7 +64,7 @@ export const useEntryStore = defineStore("entry", () => {
     const name = prompt(`Criar configurações`, await getIncrementalName(path, FILESYSTEM_ENTRIES.SETTINGS))?.trim();
     if (name === undefined) return;
     const normalizedPath = normalizePath(`/${path}/${name}`);
-    await $filesystem.createFile(normalizedPath, JSON.stringify(DEFAULT_SETTINGS, null, 2));
+    await $filesystemService.createFile(normalizedPath, JSON.stringify(DEFAULT_SETTINGS, null, 2));
     await refresh();
     await changeURL(normalizedPath);
   }
@@ -73,7 +73,7 @@ export const useEntryStore = defineStore("entry", () => {
     const name = prompt(`Criar pasta`, await getIncrementalName(path, "Pasta"))?.trim();
     if (name === undefined) return;
     const normalizedPath = normalizePath(`/${path}/${name}`);
-    await $filesystem.createDir(normalizedPath);
+    await $filesystemService.createDir(normalizedPath);
     await refresh();
   }
 
@@ -81,24 +81,24 @@ export const useEntryStore = defineStore("entry", () => {
     const name = prompt(`Criar página`, await getIncrementalName(path, "Página"))?.trim();
     if (name === undefined) return;
     const normalizedPath = normalizePath(`/${path}/${name}`);
-    await $filesystem.createDir(normalizedPath);
-    await $filesystem.createFile(`${normalizedPath}/${FILESYSTEM_ENTRIES.PAGE}`, "");
+    await $filesystemService.createDir(normalizedPath);
+    await $filesystemService.createFile(`${normalizedPath}/${FILESYSTEM_ENTRIES.PAGE}`, "");
     await refresh();
     await changeURL(normalizedPath);
   }
 
   // Read
   async function readFile(path: string) {
-    const content = await $filesystem.readFile(path);
+    const content = await $filesystemService.readFile(path);
     return content;
   }
 
   async function readDir(path: string, recursive = false) {
-    return await $filesystem.readDir(path, recursive);
+    return await $filesystemService.readDir(path, recursive);
   }
 
   async function getEntry<T = Entry>(path: string): Promise<T> {
-    return await $filesystem.getEntry(path);
+    return await $filesystemService.getEntry(path);
   }
 
   // Update
@@ -107,7 +107,7 @@ export const useEntryStore = defineStore("entry", () => {
       const entry = await getEntry(path);
       newName = prompt(`Renomear`, entry.name)?.trim();
     }
-    await $filesystem.rename(path, newName!);
+    await $filesystemService.rename(path, newName!);
     await refresh();
     if (path === currentEntry.value?.path) {
       const newPath = normalizePath(`/${getParentPath(path)}/${newName}`);
@@ -116,13 +116,13 @@ export const useEntryStore = defineStore("entry", () => {
   }
 
   async function move(entryPath: string, dirPath: string) {
-    await $filesystem.move(entryPath, dirPath);
+    await $filesystemService.move(entryPath, dirPath);
   }
 
   async function writeFile(path: string, content: string) {
     const file = await getEntry(path) as File;
     if (file.content === content) return;
-    await $filesystem.writeFile(path, content);
+    await $filesystemService.writeFile(path, content);
     await refresh();
   }
 
@@ -130,7 +130,7 @@ export const useEntryStore = defineStore("entry", () => {
   async function deleteFile(path: string) {
     const entry = await getEntry(path);
     if (confirm(`${entry.type === "file" ? "O arquivo" : "A pasta"} "${entry.name}" será excluíd${entry.type === "file" ? "o" : "a"}`)) {
-      await $filesystem.deleteFile(path);
+      await $filesystemService.deleteFile(path);
       await refresh();
       if (!(currentEntry.value && await exists(currentEntry.value.path))) {
         await changeURL("/");
@@ -142,7 +142,7 @@ export const useEntryStore = defineStore("entry", () => {
   async function deleteDir(path: string, recursive: boolean) {
     const entry = await getEntry(path);
     if (confirm(`${entry.type === "file" ? "O arquivo" : "A pasta"} "${entry.name}" será excluíd${entry.type === "file" ? "o" : "a"}`)) {
-      await $filesystem.deleteDir(path, recursive);
+      await $filesystemService.deleteDir(path, recursive);
       await refresh();
       if (!(currentEntry.value && await exists(currentEntry.value.path))) {
         await changeURL("/");
@@ -153,7 +153,7 @@ export const useEntryStore = defineStore("entry", () => {
 
   
   async function refresh() {
-    root.value.children = await $filesystem.readDir("/", true);
+    root.value.children = await $filesystemService.readDir("/", true);
     await changeCurrentEntry(useRoute().fullPath);
   }
   async function loadRoot() {
@@ -177,7 +177,7 @@ export const useEntryStore = defineStore("entry", () => {
     );
   }
   async function exists(path: string) {
-    return await $filesystem.exists(path);
+    return await $filesystemService.exists(path);
   }
   async function getPathEntries(path: string) {
     const entries: (File | Dir)[] = [];

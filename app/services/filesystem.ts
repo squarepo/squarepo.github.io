@@ -154,7 +154,7 @@ export class FilesystemService {
     if (recursive) {
       const entries = await this.readDir(path);
       for (const entry of entries) {
-        if (['page', 'database', 'dir'].includes(entry.type)) await this.deleteDir(entry.path, true);
+        if (['repository', 'page', 'database', 'dir'].includes(entry.type)) await this.deleteDir(entry.path, true);
         else if (['settings', 'properties', 'file'].includes(entry.type)) await this.deleteFile(entry.path);
       }
     }

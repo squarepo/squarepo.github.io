@@ -4,6 +4,7 @@ import type { File, Dir } from '~/types/filesystem';
 const entryStore = useEntryStore();
 const route = useRoute();
 const pathEntries = ref<(File | Dir)[]>([]);
+
 watch(
   () => route.fullPath,
   async (fullPath) => {
