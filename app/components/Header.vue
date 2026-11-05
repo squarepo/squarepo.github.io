@@ -5,6 +5,10 @@ const entryStore = useEntryStore();
 const route = useRoute();
 const pathEntries = ref<(File | Dir)[]>([]);
 
+function toggleRaw() {
+  entryStore.raw = !entryStore.raw;
+}
+
 watch(
   () => route.fullPath,
   async (fullPath) => {
@@ -37,12 +41,12 @@ watch(
           <div class="ps-2"></div>
         </ol>
       </div>
-      <div class="form-check me-2">
-        <input v-model="entryStore.raw" class="form-check-input" type="checkbox" id="rawCheck">
-        <label class="form-check-label" for="rawCheck">
-          Raw
-        </label>
-      </div>
+      <button
+        class="btn btn-outline-secondary p-2 fs-4 m-2"
+        @click="toggleRaw"
+      >
+        <i class="bi" :class="{ 'bi-book': !entryStore.raw, 'bi-pencil': entryStore.raw }"></i>
+      </button>
     </div>
   </nav>
 </template>
