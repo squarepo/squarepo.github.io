@@ -1,14 +1,15 @@
 <script setup lang="ts">
+import { useDebounceFn } from '@vueuse/core';
 import type { File } from '~/types/filesystem';
 
 const entryStore = useEntryStore();
 const props = defineProps<{ file: File }>();
 const textareaEl = ref<HTMLTextAreaElement | null>(null);
 
-async function updateFileContent(newContent: string) {
+const updateFileContent = useDebounceFn(async (newContent: string) => {
   if (textareaEl.value) updateTextareaHeight(textareaEl.value);
   await entryStore.updateFileContent(props.file.path, newContent);
-}
+}, 1000);
 
 function updateTextareaHeight(el: HTMLTextAreaElement) {
   el.style.height = "auto";

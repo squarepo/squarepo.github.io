@@ -1,8 +1,17 @@
 <script setup lang="ts">
 import type { ContextMenuItem } from '~/types/contextMenu';
+import type { Dir } from '~/types/filesystem';
 
 const { $bootstrap } = useNuxtApp();
 const entryStore = useEntryStore();
+
+const props = defineProps<{
+  root: Dir
+}>();
+
+const emit = defineEmits<{
+  changeRoot: [rootPath: string]
+}>();
 
 const repositories = computed(() => {
   let groupsAndRepos = entryStore.root.children.filter(e => {
@@ -67,7 +76,7 @@ function openContextMenu(event: MouseEvent) {
 }
 
 async function handleContextMenuSelect(item: Extract<ContextMenuItem, { type: "item" }>) {
-  const rootPath = entryStore.root.path;
+  const rootPath = props.root.path;
   switch (item.value) {
     case "create-page": await entryStore.createPage(rootPath); break;
     case "create-folder": await entryStore.createFolder(rootPath); break;
@@ -87,7 +96,10 @@ onMounted(() => {
   <div class="offcanvas offcanvas-start" tabindex="-1" id="primarySidebar">
 
     <div class="offcanvas-header">
-      <select class="form-select me-3">
+      <select
+        class="form-select me-3"
+        @change="emit('changeRoot', ($event.target as HTMLSelectElement).value)"
+      >
         <option value="/">Raiz</option>
         <option
           v-for="repo in repositories.filter(e => e.type == 'repository')"
@@ -117,7 +129,7 @@ onMounted(() => {
       class="offcanvas-body pt-0"
       @contextmenu.prevent.stop="openContextMenu"
     >
-      <ItemTree v-if="entryStore.root.children.length" :entries="entryStore.root.children"></ItemTree>
+      <ItemTree v-if="root.children.length" :entries="root.children"></ItemTree>
       <div v-else class="text-body-tertiary w-100 h-100 d-flex justify-content-center align-items-center user-select-none">
         <span>Nenhum arquivo ou pasta</span>
       </div>

@@ -1,11 +1,27 @@
 <script setup lang="ts">
-  import { FILESYSTEM_ENTRIES } from './constants/filesystem';
-  import type { File } from './types/filesystem';
+import type { Dir } from './types/filesystem';
+
   const entryStore = useEntryStore();
   const settingsStore = useSettingsStore();
   useHead({
     title: () => entryStore.currentEntry && entryStore.currentEntry.path !== "/" ? entryStore.currentEntry.name : "Squarepo"
   });
+
+  const primarySidebarRoot = ref<Dir>(entryStore.root);
+
+  async function changeRoot(rootPath: string) {
+    const names = rootPath.split('/').filter(n => n);
+    const newRoot = names.reduce<Dir>((entry, name) => {
+      return entry.children.find((e): e is Dir => e.name === name)!;
+    }, entryStore.root);
+    primarySidebarRoot.value = newRoot;
+    await entryStore.changeURL(rootPath);
+  }
+
+  // watch(() => entryStore.root, async () => {
+  //   await changeRoot(primarySidebarRoot.value.path);
+  // }, { deep: true });
+
 </script>
 
 <template>
@@ -50,8 +66,11 @@
       </template>
     </div>
 
-    <PrimarySidebar></PrimarySidebar>
-    <SecondarySidebar :entry="entryStore.currentEntry"></SecondarySidebar>
+    <PrimarySidebar
+      :root="primarySidebarRoot"
+      @changeRoot="changeRoot"
+    ></PrimarySidebar>
+    <!-- <SecondarySidebar :entry="entryStore.currentEntry"></SecondarySidebar> -->
     
   </div>
 </template>

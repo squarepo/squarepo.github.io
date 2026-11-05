@@ -7,7 +7,7 @@ import { getIncrementalName, getParentPath, normalizePath } from "~/utils/path";
 
 export const useEntryStore = defineStore("entry", () => {
 
-  const { $filesystemService } = useNuxtApp();
+  const { $filesystemService, $gitService } = useNuxtApp();
 
   const currentEntry = ref<Entry | null>(null);
 
@@ -26,22 +26,22 @@ export const useEntryStore = defineStore("entry", () => {
 
   // Git
   async function listBranches(path: string) {
-    return await $filesystemService.listBranches(path);
+    return await $gitService.listBranches(path);
   }
 
   async function getGitLog(path: string) {
-    return await $filesystemService.getGitLog(path);
+    return await $gitService.getGitLog(path);
   }
 
   async function initializeRepository(path: string) {
-    await $filesystemService.initializeRepository(path);
+    await $gitService.initializeRepository(path);
     await refresh();
   }
 
   async function cloneRepository(path: string) {
     const url = prompt(`URL do repositório`)?.trim();
     if (url === undefined) return;
-    await $filesystemService.cloneRepository(path, url);
+    await $gitService.cloneRepository(path, url);
     await refresh();
   }
 
@@ -50,7 +50,7 @@ export const useEntryStore = defineStore("entry", () => {
     if (name === undefined) return;
     const normalizedPath = normalizePath(`/${path}/${name}`);
     await $filesystemService.createDir(normalizedPath);
-    await $filesystemService.initializeRepository(normalizedPath);
+    await $gitService.initializeRepository(normalizedPath);
     await refresh();
   }
 

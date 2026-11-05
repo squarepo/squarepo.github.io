@@ -18,38 +18,6 @@ export class FilesystemService {
     }
   }
 
-  // Git
-  async listBranches(path: string) {
-    return await git.listBranches({
-      fs: this.filesystem,
-      dir: path
-    });
-  }
-
-  async getGitLog(path: string) {
-    return await git.log({
-      fs: this.filesystem,
-      dir: path
-    });
-  }
-
-  async initializeRepository(path: string) {
-    await git.init({
-      fs: this.filesystem,
-      dir: path
-    });
-  }
-
-  async cloneRepository(path: string, url: string) {
-    await git.clone({
-      fs: this.filesystem,
-      http,
-      dir: path,
-      url,
-      corsProxy: "https://cors.isomorphic-git.org" // just for testing
-    });
-  }
-
   // Create
   async createFile(path: string, content: string) {
     if (await this.exists(path)) return;
