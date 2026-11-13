@@ -29,7 +29,7 @@
 <template>
   <input
     id="title-editor"
-    class="form-control p-3 border-0 shadow-none fs-1 w-100"
+    class="form-ghost p-6 fs-xl w-100"
     style="box-sizing: border-box;"
     placeholder="Título..."
     :value="entry?.name"

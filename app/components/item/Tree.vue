@@ -156,7 +156,7 @@ function toggleDir(path: string) {
           ></ItemIcon>
           <NuxtLink
             :to="entry.path"
-            class="w-100 p-2 text-truncate text-body text-decoration-none"
+            class="w-100 p-2 text-truncate fg-body text-decoration-none"
           >
             {{ entry.name }}
           </NuxtLink>
@@ -171,7 +171,7 @@ function toggleDir(path: string) {
         ></ItemTree>
         <div
           v-else-if="entryStore.expandedDirs.has(entry.path)"
-          class="text-secondary align-self-start p-2 ms-4"
+          class="fg-4 align-self-start p-2 ms-7"
         >
           Diretório vazio
         </div>

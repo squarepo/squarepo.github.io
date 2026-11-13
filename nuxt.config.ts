@@ -7,7 +7,8 @@ export default defineNuxtConfig({
   sourcemap: { client: 'hidden' },
   css: [
     "bootstrap/dist/css/bootstrap.min.css",
-    "bootstrap-icons/font/bootstrap-icons.min.css"
+    "bootstrap-icons/font/bootstrap-icons.min.css",
+    "~/assets/css/fix-bootstrap6.css"
   ],
   app: {
     head: {

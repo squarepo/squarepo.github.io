@@ -87,17 +87,17 @@ async function handleContextMenuSelect(item: Extract<ContextMenuItem, { type: "i
 }
 
 onMounted(() => {
-  const offcanvas = new $bootstrap.Offcanvas(document.getElementById("primarySidebar")!);
+  const drawer = new $bootstrap.Drawer(document.getElementById("primaryDrawer")!);
 });
 
 </script>
 
 <template>
-  <div class="offcanvas offcanvas-start" tabindex="-1" id="primarySidebar">
+  <dialog class="drawer drawer-start" tabindex="-1" id="primaryDrawer">
 
-    <div class="offcanvas-header">
+    <div class="drawer-header">
       <select
-        class="form-select me-3"
+        class="form-control me-4"
         @change="emit('changeRoot', ($event.target as HTMLSelectElement).value)"
       >
         <option value="/">Raiz</option>
@@ -122,15 +122,15 @@ onMounted(() => {
           </option>
         </optgroup>
       </select>
-      <button type="button" class="btn-close m-0" data-bs-dismiss="offcanvas"></button>
+      <button type="button" class="btn-close m-0" data-bs-dismiss="drawer"></button>
     </div>
 
     <div
-      class="offcanvas-body pt-0"
+      class="drawer-body pt-0"
       @contextmenu.prevent.stop="openContextMenu"
     >
       <ItemTree v-if="root.children.length" :entries="root.children"></ItemTree>
-      <div v-else class="text-body-tertiary w-100 h-100 d-flex justify-content-center align-items-center user-select-none">
+      <div v-else class="fg-4 w-100 h-100 d-flex justify-content-center align-items-center user-select-none">
         <span>Nenhum arquivo ou pasta</span>
       </div>
 
@@ -144,5 +144,5 @@ onMounted(() => {
       />
     </div>
     
-  </div>
+  </dialog>
 </template>

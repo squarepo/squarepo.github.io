@@ -7,14 +7,14 @@ import type { Dir } from './types/filesystem';
     title: () => entryStore.currentEntry && entryStore.currentEntry.path !== "/" ? entryStore.currentEntry.name : "Squarepo"
   });
 
-  const primarySidebarRoot = ref<Dir>(entryStore.root);
+  const primaryDrawerRoot = ref<Dir>(entryStore.root);
 
   async function changeRoot(rootPath: string) {
     const names = rootPath.split('/').filter(n => n);
     const newRoot = names.reduce<Dir>((entry, name) => {
       return entry.children.find((e): e is Dir => e.name === name)!;
     }, entryStore.root);
-    primarySidebarRoot.value = newRoot;
+    primaryDrawerRoot.value = newRoot;
     await entryStore.changeURL(rootPath);
   }
 
@@ -66,10 +66,10 @@ import type { Dir } from './types/filesystem';
       </template>
     </div>
 
-    <PrimarySidebar
-      :root="primarySidebarRoot"
+    <PrimaryDrawer
+      :root="primaryDrawerRoot"
       @changeRoot="changeRoot"
-    ></PrimarySidebar>
+    ></PrimaryDrawer>
     <!-- <SecondarySidebar :entry="entryStore.currentEntry"></SecondarySidebar> -->
     
   </div>

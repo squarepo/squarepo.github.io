@@ -9,20 +9,20 @@ const settingsStore = useSettingsStore();
 const route = useRoute();
 
 onMounted(() => {
-  const offcanvas = new $bootstrap.Offcanvas(document.getElementById("secondarySidebar")!);
+  const drawer = new $bootstrap.Drawer(document.getElementById("secondarySidebar")!);
 });
 
 </script>
 
 <template>
-  <div class="offcanvas offcanvas-end" tabindex="-1" id="secondarySidebar">
+  <div class="drawer drawer-end" tabindex="-1" id="secondarySidebar">
 
-    <div class="offcanvas-header">
-      <h5 class="offcanvas-title">Painel secundário</h5>
-      <button type="button" class="btn-close" data-bs-dismiss="offcanvas"></button>
+    <div class="drawer-header">
+      <h5 class="drawer-title">Painel secundário</h5>
+      <button type="button" class="btn-close" data-bs-dismiss="drawer"></button>
     </div>
 
-    <div class="offcanvas-body">
+    <div class="drawer-body">
       <!-- <DirPageProperties :entry="entry"></DirPageProperties> -->
     </div>
     

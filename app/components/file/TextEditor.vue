@@ -31,7 +31,7 @@ onMounted(() => {
   <div class="d-flex flex-grow-1">
     <textarea
       ref="textareaEl"
-      class="form-control p-3 border-0 shadow-none overflow-hidden w-100"
+      class="form-ghost p-6 overflow-hidden w-100"
       style="resize: none; box-sizing: border-box; padding-bottom: 200px !important;"
       placeholder="Texto..."
       :value="props.file.content"

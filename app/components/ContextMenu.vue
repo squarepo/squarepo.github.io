@@ -32,7 +32,7 @@ function close() {
   >
     <!-- menu -->
     <div
-      class="dropdown-menu show position-fixed"
+      class="menu show position-fixed"
       :style="{
         left: `${x}px`,
         top: `${y}px`
@@ -46,12 +46,12 @@ function close() {
         <button
           v-if="item.type == 'item'"
           type="button"
-          class="dropdown-item"
+          class="menu-item"
           @click="select(item)"
         >
           {{ item.label }}
         </button>
-        <hr v-if="item.type == 'divider'" class="dropdown-divider">
+        <hr v-if="item.type == 'divider'" class="menu-divider">
       </template>
     </div>
   </div>

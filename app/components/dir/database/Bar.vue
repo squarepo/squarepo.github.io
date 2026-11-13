@@ -31,7 +31,7 @@ async function getName(path: string, baseName: string) {
 
 <template>
   <div class="border p-2 d-flex justify-content-end gap-2 overflow-auto">
-    <button type="button" class="btn btn-sm btn-secondary d-flex align-items-center justify-content-center p-2 gap-2" data-bs-toggle="offcanvas" data-bs-target="#secondarySidebar">
+    <button type="button" class="btn btn-sm btn-secondary d-flex align-items-center justify-content-center p-2 gap-2" data-bs-toggle="drawer" data-bs-target="#secondaryDrawer">
       <i class="bi bi-sliders"></i>
       <!-- <span>Nova página</span> -->
     </button>
